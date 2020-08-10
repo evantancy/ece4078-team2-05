@@ -12,7 +12,7 @@ class Keyboard:
 
     def __init__(self, ppi=None):
         # storage for key presses
-        self.directions = [False for _ in range(4)]
+        self.directions = [False for _ in range(5)]
         self.signal_stop = False 
 
         # connection to PenguinPi robot
@@ -33,6 +33,11 @@ class Keyboard:
             self.directions[2] = True
         elif key == Key.right:
             self.directions[3] = True
+        elif key == key.shift:
+            self.directions[4] = True
+
+        #elif key == Key.S:
+        #    self.directions[5] = True
         elif key == Key.space:
             self.signal_stop = True
 
@@ -52,21 +57,48 @@ class Keyboard:
             left_speed = self.wheel_vel_forward
             right_speed = self.wheel_vel_forward
             self.directions[0] = False
+
         elif self.directions[1]:
             left_speed = -self.wheel_vel_forward
             right_speed = -self.wheel_vel_forward
             self.directions[1] = False
+
         elif self.directions[2]:
             left_speed = 0
             right_speed = self.wheel_vel_rotation
             self.directions[2] = False
+
         elif self.directions[3]:
             left_speed = self.wheel_vel_rotation
             right_speed = 0
             self.directions[3] = False
+
+        elif self.directions[4]:
+            self.wheel_vel_forward+=50
+            self.directions[4] = False
+            if self.wheel_vels[0]==0 and self.wheel_vels[1]==0:
+                left_speed = 0
+                right_speed = 0
+            elif self.wheel_vels[0]>0 and self.wheel_vels[1]>0:
+                left_speed = self.wheel_vel_forward
+                right_speed = self.wheel_vel_forward
+            elif self.wheel_vels[0]<0 and self.wheel_vels[1]<0:
+                left_speed = -self.wheel_vel_forward
+                right_speed = -self.wheel_vel_forward
+            elif self.wheel_vels[0]>self.wheel_vels[1]:
+                left_speed = self.wheel_vel_rotation
+                right_speed = 0
+            else:
+                left_speed = 0
+                right_speed = self.wheel_vel_rotation
+
+            
+
         elif self.signal_stop:
             left_speed = 0
             right_speed = 0
+            self.wheel_vel_forward = 100
+            self.wheel_vel_rotation = 20
             self.signal_stop = False
 
         return left_speed, right_speed
