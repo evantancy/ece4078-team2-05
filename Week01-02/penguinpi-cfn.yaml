@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Monash EC2 Instance for PenguinPi"
+
+Parameters:
+  DefaultVpc:
+    Type: AWS::EC2::VPC::Id
+    Description: Must be your default VPC ID (uses IP range 172.31.0.0/16)
+
+Resources:
+  PenguinPiInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-08ac5fa2701516df2
+      InstanceType: c5.large
+      SecurityGroupIds:
+        - !Ref PenguinPiInstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: PenguinPiInstance
+  PenguinPiInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH and NoMachine Remote Access to PenguinPi Instance
+      VpcId: !Ref DefaultVpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 4000
+          ToPort: 4000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: 4011
+          ToPort: 4999
+          CidrIp: 0.0.0.0/0
+  ElasticIp:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref PenguinPiInstance
+
+Outputs:
+  InstancePublicIp:
+    Description: Connection IP for NoMachine
+    Value: !Ref ElasticIp
+

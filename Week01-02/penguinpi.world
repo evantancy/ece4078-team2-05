@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="default">
+    <scene>
+      <ambient>0.8 0.8 0.8 1.0</ambient>
+      <shadows>0</shadows>
+      </scene>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <!--
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    -->
+    <include>
+      <uri>model://starting_pen</uri>
+    </include>
+    <include>
+      <uri>model://penguinpi_description</uri>
+      <pose>0 7 0.02 0 -0.0725 0</pose>
+    </include>
+
+    <gui>
+      <camera name="user_camera">
+        <pose>6.5 -2 15 0 0.98 2.13</pose>
+      </camera>
+    </gui>
+    <physics name='default_physics' default='0' type='ode'>
+      <max_step_size>0.005</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>100</real_time_update_rate>
+    </physics>
+  </world>
+</sdf>
