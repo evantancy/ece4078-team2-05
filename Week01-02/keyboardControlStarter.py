@@ -1,50 +1,79 @@
-# teleoperate the robot through keyboard control
-# getting-started code
-
 from pynput.keyboard import Key, Listener, KeyCode
 import cv2
 import numpy as np
+import penguinPiC
 
 class Keyboard:
-    # feel free to change the speed, or add keys to do so
-    wheel_vel_forward = 100
-    wheel_vel_rotation = 20
-
-    def __init__(self, ppi=None):
-        # storage for key presses
-        self.directions = [False for _ in range(5)]
-        self.signal_stop = False 
-
-        # connection to PenguinPi robot
+    
+    
+    def __init__(self, ppi=None, fwd=100, rot=40):
+        """Constructor
+        Args:
+            ppi (penguinPiC): penguinPiC object. Defaults to None.
+        """
+        
+        # Triggers for key presses
+        self.directions = [False for _ in range(4)]
+        # Triggers for incrementing speeds
+        self.increments = self.directions
+        self.signal_stop = False
+        
+        # Connection to PenguinPi robot
         self.ppi = ppi
+        
+        # [Left, Right]
         self.wheel_vels = [0, 0]
+        self.wheel_vel_forward = fwd
+        self.wheel_vel_rotation = rot
+        
+        # Initialize pynput keyboard listener
+        self.listener = Listener(on_press=self.on_press, on_release=self.on_release).start()
+        
+        
+    def set_state(self, key, activate):
+        """What we want the robot to do
+        Args:
+            key (Key): keyboard input
+            activate (bool): turn state on/off
+        """
+        
+        if str(key.char).lower() == 'w':
+            self.directions[0] = activate
+        elif str(key.char).lower() == 's':
+            self.directions[1] = activate
+        elif str(key.char).lower() == 'a':
+            self.directions[2] = activate
+        elif str(key.char).lower() == 'd':
+            self.directions[3] = activate
+        elif key == Key.space:
+            self.signal_stop = activate
 
-        self.listener = Listener(on_press=self.on_press).start()
 
     def on_press(self, key):
-        print(key)
-        # use arrow keys to drive, space key to stop
-        # feel free to add more keys
-        if key == Key.up:
-            self.directions[0] = True
-        elif key == Key.down:
-            self.directions[1] = True
-        elif key == Key.left:
-            self.directions[2] = True
-        elif key == Key.right:
-            self.directions[3] = True
-        elif key == key.shift:
-            self.directions[4] = True
-
-        #elif key == Key.S:
-        #    self.directions[5] = True
-        elif key == Key.space:
-            self.signal_stop = True
-
+        """Function call when keys are pressed
+        Args:
+            key (Key): keyboard input
+        """
+        try:
+            self.set_state(key, True)
+        except AttributeError:
+            print("Key {0} pressed, use W,A,S,D Keys!".format(
+            key.char))
+        # Request robot to move
         self.send_drive_signal()
         
+    def on_release(self, key):
+        """Function call when keys are release
+        Args:
+            key (Key): keyboard input
+        """
+        try:
+            self.set_state(key, False)
+        except AttributeError:
+            print("Key {0} pressed, use W,A,S,D Keys!".format(
+            key.char))
+        
     def get_drive_signal(self):           
-        # translate the key presses into drive signals 
         
         # compute drive_forward and drive_rotate using wheel_vel_forward and wheel_vel_rotation
         #drive_forward = 100*(np.multiply(self.directions[0],1)-np.multiply(self.directions[1],1))
@@ -53,6 +82,7 @@ class Keyboard:
         # translate drive_forward and drive_rotate into left_speed and right_speed
         #left_speed = drive_forward -(drive_rotate<0)*drive_rotate
         #right_speed = drive_forward +(drive_rotate>0)*drive_rotate
+        
         if self.directions[0]:
             left_speed = self.wheel_vel_forward
             right_speed = self.wheel_vel_forward
@@ -110,15 +140,17 @@ class Keyboard:
             self.wheel_vels = [lv, rv]
             
     def latest_drive_signal(self):
+        # Return current state of robot
         return self.wheel_vels
     
 
 if __name__ == "__main__":
-    import penguinPiC
+    print("Use the W,A,S,D Keys to drive to robot")
+    print("Use the Up/Down arrow keys to increase/decrease speed moving forwards/backwards")
+    print("Use the Left/Right arrow keys to increase/decrease speed turning left/right")
+    
     ppi = penguinPiC.PenguinPi()
-
     keyboard_control = Keyboard(ppi)
-
     cv2.namedWindow('video', cv2.WINDOW_NORMAL);
     cv2.setWindowProperty('video', cv2.WND_PROP_AUTOSIZE, cv2.WINDOW_AUTOSIZE);
 
