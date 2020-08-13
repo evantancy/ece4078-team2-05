@@ -38,6 +38,8 @@ class Keyboard:
             key (Key): keyboard input
             activate (bool): turn state on/off
         """
+        if key == Key.space:
+            self.signal_stop = activate
         
         try:
             if str(key.char).lower() == 'w':
@@ -52,8 +54,7 @@ class Keyboard:
             elif str(key.char).lower() == 'd':
                 self.directions[3] = activate
                 
-            elif key == Key.space:
-                self.signal_stop = activate
+            
                 
         except AttributeError:
             pass
@@ -65,7 +66,7 @@ class Keyboard:
         Args:
             key (Key): keyboard input
         """
-        
+
         if key == Key.up:
             if self.wheel_vel_forward < 300:
                 self.wheel_vel_forward += 5
@@ -89,7 +90,8 @@ class Keyboard:
         Args:
             key (Key): keyboard input
         """
-        
+        print(key)
+
         self.trigger_state(key, True)
         self.set_target(key)
         # Request robot to move
@@ -110,35 +112,51 @@ class Keyboard:
             right_target: Target velocity for right wheel
         """
         
-        left_target = 0
-        right_target = 0
+        "Update speed - Check the current state of the robot movement so we can update the wheel velocity from the speed adjustments accordingly:"
+        [left_target,right_target] = self.latest_drive_signal()
+        if left_target>right_target:
+            left_target = self.wheel_vel_turning
+            right_target = 0
+        elif left_target<right_target:
+            left_target = 0
+            right_target = self.wheel_vel_turning
+        elif left_target>0 and right_target>0:
+            left_target = self.wheel_vel_forward
+            right_target = self.wheel_vel_forward
+        elif left_target<0 and right_target<0:
+            left_target = -self.wheel_vel_forward
+            right_target = -self.wheel_vel_forward
         
+        "stop on space bar"
+        if self.signal_stop == True:
+            left_target = 0
+            right_target = 0
+            self.wheel_vel_forward = 100
+            self.wheel_vel_turning = 40
+            self.signal_stop = False
+
+        "Update direction - check within directions array and adjust left and right wheel velocity accordingly"
         for index, direction in enumerate(self.directions):
             if direction == True:
                 if index == 0:
                     # Forward
-                    left_target += self.wheel_vel_forward
-                    right_target += self.wheel_vel_forward
+                    left_target = self.wheel_vel_forward
+                    right_target = self.wheel_vel_forward
                     
                 elif index == 1:
                     # Backward
-                    left_target += -self.wheel_vel_forward
-                    right_target += -self.wheel_vel_forward
+                    left_target = -self.wheel_vel_forward
+                    right_target = -self.wheel_vel_forward
                     
                 elif index == 2:
                     # Turn Left
-                    left_target += 0
-                    right_target += self.wheel_vel_turning
+                    left_target = 0
+                    right_target = self.wheel_vel_turning
                     
                 elif index == 3:
                     # Turn Right
-                    left_target += self.wheel_vel_turning
-                    right_target += 0
-                    
-                elif self.signal_stop:
-                    self.wheel_vel_forward = 100
-                    self.wheel_vel_turning = 40
-                    self.signal_stop = False
+                    left_target = self.wheel_vel_turning
+                    right_target = 0
                     
         return left_target, right_target
     
