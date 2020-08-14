@@ -2,6 +2,10 @@ from pynput.keyboard import Key, Listener, KeyCode
 import cv2
 import numpy as np
 import penguinPiC
+import time
+
+beginning = True
+
 
 class Keyboard:
     
@@ -26,6 +30,7 @@ class Keyboard:
         self.wheel_vels = [0, 0]
         self.wheel_vel_forward = forward_vel
         self.wheel_vel_turning = turning_vel
+        self.key_pressed = 'NONE'
         
         # Initialize pynput keyboard listener (non-blocking)
         self.listener = Listener(on_press=self.on_press, on_release=self.on_release).start()
@@ -38,6 +43,7 @@ class Keyboard:
             key (Key): keyboard input
             activate (bool): turn state on/off
         """
+        
         if key == Key.space:
             self.signal_stop = activate
         
@@ -86,6 +92,7 @@ class Keyboard:
 
 
     def on_press(self, key):
+        self.key_pressed = key
         """Function call when keys are pressed
         Args:
             key (Key): keyboard input
@@ -113,7 +120,7 @@ class Keyboard:
         """
         
         "Update speed - Check the current state of the robot movement so we can update the wheel velocity from the speed adjustments accordingly:"
-        [left_target,right_target] = self.latest_drive_signal()
+        [left_target,right_target,k] = self.latest_drive_signal()
         if left_target>right_target:
             left_target = self.wheel_vel_turning
             right_target = 0
@@ -168,7 +175,9 @@ class Keyboard:
             
     def latest_drive_signal(self):
         # Return current state of robot
-        return self.wheel_vels
+        l,r=self.wheel_vels
+        k = self.key_pressed
+        return l,r,k
     
     def diagnostics(self):
         lst = [self.wheel_vel_forward, self.wheel_vel_turning]
@@ -182,17 +191,21 @@ if __name__ == "__main__":
     ppi = penguinPiC.PenguinPi()
     keyboard_control = Keyboard(ppi)
     
+    # Font display options
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.8
+    font_col = (255, 127, 127)
+    line_type = 1
+
+   
     cv2.namedWindow('PenguinPi Stream', cv2.WINDOW_AUTOSIZE);
-
+    
+    ticks = 0;
     while True:
-        # Font display options
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 0.8
-        font_col = (255, 127, 127)
-        line_type = 1
+        
 
-        left_wheel_vel, right_wheel_vel = keyboard_control.latest_drive_signal();
-
+        left_wheel_vel, right_wheel_vel,key_pressed = keyboard_control.latest_drive_signal();
+    
         # Get current camera frame
         frame = ppi.get_image()
         
@@ -201,13 +214,31 @@ if __name__ == "__main__":
         width = int(scale * frame.shape[1])
         height = int(scale * frame.shape[0])
         resized_frame = cv2.resize(frame, (width, height), interpolation = cv2.INTER_AREA)
+        cv2.namedWindow('PenguinPi Stream', cv2.WINDOW_AUTOSIZE);
         
         # OpenCV display
         x = 15
         y = 30
+        while beginning and ticks>5:
+            cv2.putText(resized_frame, 'Use the W,A,S,D Keys to drive to robot', (x, 4*y), font, font_scale,(0,0,0), 3)
+            cv2.imshow('PenguinPi Stream', resized_frame)
+            cv2.putText(resized_frame, 'Use the Up/Down arrow keys to increase/decrease', (x, 6*y), font, font_scale,(0,0,0), 3)
+            cv2.imshow('PenguinPi Stream', resized_frame)
+            cv2.putText(resized_frame, 'speed moving forwards/backwards', (x, 7*y), font, font_scale,(0,0,0), 3)
+            cv2.imshow('PenguinPi Stream', resized_frame)
+            cv2.putText(resized_frame, 'Use the Left/Right arrow keys to increase/decrease', (x, 9*y), font, font_scale,(0,0,0), 3)
+            cv2.imshow('PenguinPi Stream', resized_frame)
+            cv2.putText(resized_frame, 'speed turning left/right', (x, 10*y), font, font_scale,(0,0,0), 3)
+            cv2.imshow('PenguinPi Stream', resized_frame)
+            cv2.waitKey(1)
+            time.sleep(10)
+            beginning = False
         cv2.putText(resized_frame, 'PenguinPi', (x, y), font, font_scale, font_col, line_type)
-        cv2.putText(resized_frame, 'L_VEL = '+str(left_wheel_vel)+', R_VEL = '+str(right_wheel_vel), (15, 2*y), font, font_scale, font_col, line_type)
+        cv2.putText(resized_frame, 'L VEL = '+str(left_wheel_vel)+', R VEL = '+str(right_wheel_vel), (15, 2*y), font, font_scale, (0,0,0), 2)
+        cv2.putText(resized_frame, 'KEY PRESSED: '+str(key_pressed), (15, 3*y), font, font_scale, (255,0,0), 3)
         cv2.imshow('PenguinPi Stream', resized_frame)
         cv2.waitKey(1)
+        ticks+=1
+
 
         continue
