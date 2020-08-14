@@ -6,7 +6,6 @@ import time
 
 beginning = True
 
-
 class Keyboard:
     
     
@@ -60,8 +59,6 @@ class Keyboard:
             elif str(key.char).lower() == 'd':
                 self.directions[3] = activate
                 
-            
-                
         except AttributeError:
             pass
     
@@ -92,13 +89,11 @@ class Keyboard:
 
 
     def on_press(self, key):
-        self.key_pressed = key
         """Function call when keys are pressed
         Args:
             key (Key): keyboard input
         """
-        print(key)
-
+        self.key_pressed = key
         self.trigger_state(key, True)
         self.set_target(key)
         # Request robot to move
@@ -119,52 +114,52 @@ class Keyboard:
             right_target: Target velocity for right wheel
         """
         
-        "Update speed - Check the current state of the robot movement so we can update the wheel velocity from the speed adjustments accordingly:"
-        [left_target,right_target,k] = self.latest_drive_signal()
-        if left_target>right_target:
+        """Update speed - Check the current state of the robot movement so we can update the wheel velocity from the speed adjustments accordingly"""
+        [left_target,right_target, _ ] = self.latest_drive_signal()
+        
+        if left_target > right_target:
             left_target = self.wheel_vel_turning
             right_target = 0
-        elif left_target<right_target:
+        elif left_target < right_target:
             left_target = 0
             right_target = self.wheel_vel_turning
-        elif left_target>0 and right_target>0:
+        elif left_target > 0 and right_target > 0:
             left_target = self.wheel_vel_forward
             right_target = self.wheel_vel_forward
-        elif left_target<0 and right_target<0:
+        elif left_target < 0 and right_target < 0:
             left_target = -self.wheel_vel_forward
             right_target = -self.wheel_vel_forward
         
-        "stop on space bar"
         if self.signal_stop == True:
             left_target = 0
             right_target = 0
             self.wheel_vel_forward = 100
             self.wheel_vel_turning = 40
             self.signal_stop = False
+        else:
+            """Update direction - check within directions array and adjust left and right wheel velocity accordingly"""
+            for index, direction in enumerate(self.directions):
+                if direction == True:
+                    if index == 0:
+                        # Forward
+                        left_target = self.wheel_vel_forward
+                        right_target = self.wheel_vel_forward
+                        
+                    elif index == 1:
+                        # Backward
+                        left_target = -self.wheel_vel_forward
+                        right_target = -self.wheel_vel_forward
+                        
+                    elif index == 2:
+                        # Turn Left
+                        left_target = 0
+                        right_target = self.wheel_vel_turning
+                        
+                    elif index == 3:
+                        # Turn Right
+                        left_target = self.wheel_vel_turning
+                        right_target = 0
 
-        "Update direction - check within directions array and adjust left and right wheel velocity accordingly"
-        for index, direction in enumerate(self.directions):
-            if direction == True:
-                if index == 0:
-                    # Forward
-                    left_target = self.wheel_vel_forward
-                    right_target = self.wheel_vel_forward
-                    
-                elif index == 1:
-                    # Backward
-                    left_target = -self.wheel_vel_forward
-                    right_target = -self.wheel_vel_forward
-                    
-                elif index == 2:
-                    # Turn Left
-                    left_target = 0
-                    right_target = self.wheel_vel_turning
-                    
-                elif index == 3:
-                    # Turn Right
-                    left_target = self.wheel_vel_turning
-                    right_target = 0
-                    
         return left_target, right_target
     
     
@@ -173,14 +168,12 @@ class Keyboard:
             l_target, r_target = self.get_drive_signal()
             self.wheel_vels = self.ppi.set_velocity(l_target, r_target)
             
+            
     def latest_drive_signal(self):
         # Return current state of robot
-        l,r=self.wheel_vels
+        l,r = self.wheel_vels
         k = self.key_pressed
         return l,r,k
-    
-    def diagnostics(self):
-        lst = [self.wheel_vel_forward, self.wheel_vel_turning]
     
 
 if __name__ == "__main__":
@@ -202,9 +195,7 @@ if __name__ == "__main__":
     
     ticks = 0;
     while True:
-        
-
-        left_wheel_vel, right_wheel_vel,key_pressed = keyboard_control.latest_drive_signal();
+        left_wheel_vel, right_wheel_vel, key_pressed = keyboard_control.latest_drive_signal();
     
         # Get current camera frame
         frame = ppi.get_image()
@@ -219,7 +210,7 @@ if __name__ == "__main__":
         # OpenCV display
         x = 15
         y = 30
-        while beginning and ticks>5:
+        while beginning and ticks > 5:
             cv2.putText(resized_frame, 'Use the W,A,S,D Keys to drive to robot', (x, 4*y), font, font_scale,(0,0,0), 3)
             cv2.imshow('PenguinPi Stream', resized_frame)
             cv2.putText(resized_frame, 'Use the Up/Down arrow keys to increase/decrease', (x, 6*y), font, font_scale,(0,0,0), 3)
@@ -233,12 +224,12 @@ if __name__ == "__main__":
             cv2.waitKey(1)
             time.sleep(10)
             beginning = False
+            
         cv2.putText(resized_frame, 'PenguinPi', (x, y), font, font_scale, font_col, line_type)
         cv2.putText(resized_frame, 'L VEL = '+str(left_wheel_vel)+', R VEL = '+str(right_wheel_vel), (15, 2*y), font, font_scale, (0,0,0), 2)
         cv2.putText(resized_frame, 'KEY PRESSED: '+str(key_pressed), (15, 3*y), font, font_scale, (255,0,0), 3)
         cv2.imshow('PenguinPi Stream', resized_frame)
         cv2.waitKey(1)
         ticks+=1
-
 
         continue
