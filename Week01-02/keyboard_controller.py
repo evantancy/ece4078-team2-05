@@ -1,7 +1,7 @@
 from pynput.keyboard import Key, Listener, KeyCode
 import cv2
 import numpy as np
-import penguinPiC
+import PenguinPiC
 import time
 
 beginning = True
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     print("Use the Up/Down arrow keys to increase/decrease speed moving forwards/backwards")
     print("Use the Left/Right arrow keys to increase/decrease speed turning left/right")
     
-    ppi = penguinPiC.PenguinPi()
+    ppi = PenguinPiC.PenguinPi()
     keyboard_control = Keyboard(ppi)
     
     # Font display options
