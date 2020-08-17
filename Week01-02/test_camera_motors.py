@@ -12,9 +12,7 @@ def set_velocity(vel0, vel1):
 def get_image():
     r = requests.get("http://localhost:40000/camera/get")
     img = cv2.imdecode(np.fromstring(r.content,np.uint8), cv2.IMREAD_COLOR)
-
     return img
-
 
 if __name__ == "__main__":
     print("test left motor")

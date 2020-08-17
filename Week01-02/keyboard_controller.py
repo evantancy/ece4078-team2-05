@@ -7,9 +7,6 @@ import time
 beginning = True
 
 class Keyboard:
-    
-    
-    
     def __init__(self, ppi=None, forward_vel=100, turning_vel=40):
         """Constructor
         Args:
@@ -21,7 +18,7 @@ class Keyboard:
         # Triggers for key presses
         self.directions = [False for _ in range(4)]
         self.signal_stop = False
-        
+
         # Connection to PenguinPi robot
         self.ppi = ppi
         
@@ -33,7 +30,6 @@ class Keyboard:
         
         # Initialize pynput keyboard listener (non-blocking)
         self.listener = Listener(on_press=self.on_press, on_release=self.on_release).start()
-        
         
         
     def trigger_state(self, key, activate):
@@ -63,7 +59,6 @@ class Keyboard:
             pass
     
     
-    
     def set_target(self, key):
         """Increase/decrease target velocities
         Args:
@@ -87,7 +82,6 @@ class Keyboard:
                 self.wheel_vel_turning += 2
 
 
-
     def on_press(self, key):
         """Function call when keys are pressed
         Args:
@@ -98,6 +92,7 @@ class Keyboard:
         self.set_target(key)
         # Request robot to move
         self.send_drive_signal()
+        
         
     def on_release(self, key):
         """Function call when keys are released
@@ -189,7 +184,6 @@ if __name__ == "__main__":
     font_scale = 0.8
     font_col = (255, 127, 127)
     line_type = 1
-
    
     cv2.namedWindow('PenguinPi Stream', cv2.WINDOW_AUTOSIZE);
     
