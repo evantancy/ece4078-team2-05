@@ -12,7 +12,7 @@ def calibrateWheelRadius():
     # by comparing the time and distance driven to the input wheel velocities.
 
     # Feel free to change the range / step
-    wheel_velocities_range = range(20, 80, 15)
+    wheel_velocities_range = [20]#range(20, 80, 15)
     delta_times = []
 
     for wheel_vel in wheel_velocities_range:
@@ -42,7 +42,7 @@ def calibrateWheelRadius():
     scale = 0
     for delta_time, wheel_vel in zip(delta_times, wheel_velocities_range):
         scale += 1 / num * (1 / (wheel_vel * delta_time))
-    print("The scale parameter is estimated as {:.2f} m/ticks.".format(scale))
+    print("The scale parameter is estimated as {:.5f} m/ticks.".format(scale))
 
     return scale
 
@@ -54,7 +54,7 @@ def calibrateBaseline(scale):
     # velocities to find out the distance between the wheels.
 
     # Feel free to change the range / step
-    wheel_velocities_range = range(30, 60, 10)
+    wheel_velocities_range = [30]#range(30, 60, 10)
     delta_times = []
 
     for wheel_vel in wheel_velocities_range:
@@ -75,7 +75,7 @@ def calibrateBaseline(scale):
             uInput = input("Did the robot spin 360deg?[y/N]")
             if uInput == 'y':
                 delta_times.append(delta_time)
-                print("Recording that the robot spun 360deg in {:.2f} seconds at wheel speed {}.\n".format(delta_time,
+                print("Recording that the robot spun 360deg in {:.20f} seconds at wheel speed {}.\n".format(delta_time,
                                                                                                            wheel_vel))
                 break
 
@@ -84,7 +84,8 @@ def calibrateBaseline(scale):
     baseline = 0
     # TODO: compute baseline parameter
     # ------------------------------------------
-    # ----------- Add your code here -----------
+    for delta_time, wheel_vel in zip(delta_times, wheel_velocities_range):
+        baseline += 1 / num * (scale * wheel_vel * delta_time)/np.pi
     # ------------------------------------------
     print("The baseline parameter is estimated as {:.2f} m.".format(baseline))
 
