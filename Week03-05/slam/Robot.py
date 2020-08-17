@@ -2,7 +2,7 @@ import numpy as np
 
 class Robot:
     def __init__(self, wheels_width, wheels_scale, camera_matrix, camera_dist):
-        # State is a vector of [x,y,theta]'
+        # State is a vector of [x,y,theta]' (3x1 column vector)
         self.state = np.zeros((3,1))
         
         # Wheel parameters
@@ -23,9 +23,22 @@ class Robot:
         # Apply the velocities
         dt = drive_meas.dt
         # TODO: compute state (x,y,theta) from linear and angular velocity
-        # ------------------------------------------
-        # ----------- Add your code here -----------
-        # ------------------------------------------
+        current_x = self.state[0]
+        current_y = self.state[1]
+        current_theta = self.state[2]
+        
+        predict_state = np.zeros((3,1))
+        if angular_velocity != 0:
+            # Radius of curvature
+            R = linear_velocity / angular_velocity
+            predict_theta = current_theta + angular_velocity * dt
+            self.state[0] = self.state[0] + R*(-np.sin(current_theta) + np.sin(predict_theta))
+            self.state[1] = self.state[1] + R*(np.cos(current_theta) - np.sin(predict_theta))
+            self.state[2] = predict_theta
+        else:
+            self.state[0] = self.state[0] + linear_velocity * dt * np.cos(self.state[2])
+            self.state[1] = self.state[1] + linear_velocity * dt * np.sin(self.state[2])
+            self.state[2] = self.state[2]
 
     def measure(self, markers, idx_list):
         # Markers are 2d landmarks in a 2xn structure where there are n landmarks.
