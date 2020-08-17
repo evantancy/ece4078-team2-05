@@ -2,12 +2,13 @@ import numpy as np
 import cv2
 from cv2 import aruco
 import matplotlib.pyplot as plt
+
 import os
 import sys
-
-import penguinPiC
-ppi = penguinPiC.PenguinPi()
-
+# Import PenguinPiC
+os.chdir("../../Week01-02")
+sys.path.insert(0, "{}".format(os.getcwd()))
+import PenguinPiC
 
 def camera_calibration(dataDir):
     # This file can be used to generate camera calibration parameters
@@ -95,6 +96,7 @@ def image_collection(dataDir, images_to_collect):
 
 
 if __name__ == "__main__":
+    ppi = PenguinPiC.PenguinPi()
     currentDir = os.getcwd()
     dataDir = "{}/camera_calibration/".format(currentDir)
     if not os.path.exists(dataDir):

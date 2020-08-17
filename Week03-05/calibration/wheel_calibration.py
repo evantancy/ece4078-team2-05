@@ -1,21 +1,23 @@
 import numpy as np
+
 import os
 import sys
+# Import PenguinPiC
+os.chdir("../../Week01-02")
+sys.path.insert(0, "{}".format(os.getcwd()))
+import PenguinPiC
 
-import penguinPiC
-ppi = penguinPiC.PenguinPi()
 
-
-def calibrateWheelRadius():
+def calibrateWheelRadius(ppi):
     # Compute the robot scale parameter using a range of wheel velocities.
     # For each wheel velocity, the robot scale parameter can be computed
     # by comparing the time and distance driven to the input wheel velocities.
 
-    # Feel free to change the range / step
-    wheel_velocities_range = [20]#range(20, 80, 15)
+    # wheel_velocities = range(20, 81, 15)
+    wheel_velocities = [20]
     delta_times = []
 
-    for wheel_vel in wheel_velocities_range:
+    for wheel_vel in wheel_velocities:
         print("Driving at {} ticks/s.".format(wheel_vel))
 
         # Repeat the test until the correct time is found.
@@ -38,26 +40,26 @@ def calibrateWheelRadius():
                 break
 
     # Once finished driving, compute the scale parameter by averaging
-    num = len(wheel_velocities_range)
+    num = len(wheel_velocities)
     scale = 0
-    for delta_time, wheel_vel in zip(delta_times, wheel_velocities_range):
+    for delta_time, wheel_vel in zip(delta_times, wheel_velocities):
         scale += 1 / num * (1 / (wheel_vel * delta_time))
     print("The scale parameter is estimated as {:.5f} m/ticks.".format(scale))
 
     return scale
 
 
-def calibrateBaseline(scale):
+def calibrateBaseline(ppi, scale):
     # Compute the robot basline parameter using a range of wheel velocities.
     # For each wheel velocity, the robot baseline parameter can be computed by
     # comparing the time elapsed and rotation completed to the input wheel
     # velocities to find out the distance between the wheels.
 
     # Feel free to change the range / step
-    wheel_velocities_range = [30]#range(30, 60, 10)
+    wheel_velocities = [30]#range(30, 60, 10)
     delta_times = []
 
-    for wheel_vel in wheel_velocities_range:
+    for wheel_vel in wheel_velocities:
         print("Driving at {} ticks/s.".format(wheel_vel))
 
         # Repeat the test until the correct time is found.
@@ -80,11 +82,11 @@ def calibrateBaseline(scale):
                 break
 
     # Once finished driving, compute the basline parameter by averaging
-    num = len(wheel_velocities_range)
+    num = len(wheel_velocities)
     baseline = 0
     # TODO: compute baseline parameter
     # ------------------------------------------
-    for delta_time, wheel_vel in zip(delta_times, wheel_velocities_range):
+    for delta_time, wheel_vel in zip(delta_times, wheel_velocities):
         baseline += 1 / num * (scale * wheel_vel * delta_time)/np.pi
     # ------------------------------------------
     print("The baseline parameter is estimated as {:.2f} m.".format(baseline))
@@ -95,14 +97,16 @@ def calibrateBaseline(scale):
 if __name__ == "__main__":
     # calibrate pibot scale and baseline
     dataDir = "{}/wheel_calibration/".format(os.getcwd())
+    
+    ppi = PenguinPiC.PenguinPi()
 
     print('Calibrating PiBot scale...\n')
-    scale = calibrateWheelRadius()
+    scale = calibrateWheelRadius(ppi)
     fileNameS = "{}scale.txt".format(dataDir)
     np.savetxt(fileNameS, np.array([scale]), delimiter=',')
 
     print('Calibrating PiBot baseline...\n')
-    baseline = calibrateBaseline(scale)
+    baseline = calibrateBaseline(ppi, scale)
     fileNameB = "{}baseline.txt".format(dataDir)
     np.savetxt(fileNameB, np.array([baseline]), delimiter=',')
 
