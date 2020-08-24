@@ -77,7 +77,7 @@ def calibrateBaseline(ppi, scale):
             uInput = input("Did the robot spin 360deg?[y/N]")
             if uInput == 'y':
                 delta_times.append(delta_time)
-                print("Recording that the robot spun 360deg in {:.20f} seconds at wheel speed {}.\n".format(delta_time,
+                print("Recording that the robot spun 360deg in {:.2f} seconds at wheel speed {}.\n".format(delta_time,
                                                                                                            wheel_vel))
                 break
 

@@ -114,9 +114,9 @@ class Keyboard:
         
         if left_target > right_target:
             left_target = self.wheel_vel_turning
-            right_target = 0
+            right_target = -self.wheel_vel_turning
         elif left_target < right_target:
-            left_target = 0
+            left_target = -self.wheel_vel_turning
             right_target = self.wheel_vel_turning
         elif left_target > 0 and right_target > 0:
             left_target = self.wheel_vel_forward
@@ -147,13 +147,13 @@ class Keyboard:
                         
                     elif index == 2:
                         # Turn Left
-                        left_target = 0
+                        left_target = -self.wheel_vel_turning
                         right_target = self.wheel_vel_turning
                         
                     elif index == 3:
                         # Turn Right
                         left_target = self.wheel_vel_turning
-                        right_target = 0
+                        right_target = -self.wheel_vel_turning
 
         return left_target, right_target
     
