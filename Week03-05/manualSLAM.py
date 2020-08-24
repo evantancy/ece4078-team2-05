@@ -1,4 +1,5 @@
-# Manually drive the robot inside the arena and perform SLAM using ARUCO markers
+# Manually drive the robot inside the arena and perform SLAM using ARUCO
+# markers
 
 # Import packages
 import numpy as np

@@ -1,14 +1,15 @@
 import numpy as np
 import cv2
-from cv2 import aruco
+
 import matplotlib.pyplot as plt
 
 import os
 import sys
 # Import PenguinPiC
-os.chdir("../../Week01-02")
+os.chdir("../")
 sys.path.insert(0, "{}".format(os.getcwd()))
 import PenguinPiC
+from cv2 import aruco
 
 def camera_calibration(dataDir):
     # This file can be used to generate camera calibration parameters

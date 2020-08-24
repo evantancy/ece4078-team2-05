@@ -3,7 +3,7 @@ import numpy as np
 import os
 import sys
 # Import PenguinPiC
-os.chdir("../../Week01-02")
+os.chdir("../")
 sys.path.insert(0, "{}".format(os.getcwd()))
 import PenguinPiC
 
@@ -97,7 +97,7 @@ def calibrateBaseline(ppi, scale):
 if __name__ == "__main__":
     # calibrate pibot scale and baseline
     dataDir = "{}/wheel_calibration/".format(os.getcwd())
-    
+
     ppi = PenguinPiC.PenguinPi()
 
     print('Calibrating PiBot scale...\n')
