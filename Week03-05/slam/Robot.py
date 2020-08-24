@@ -47,12 +47,13 @@ class Robot:
         current_theta = self.state[2]
         
         predict_state = np.zeros((3,1))
+
         if angular_velocity != 0:
             # Radius of curvature
             R = linear_velocity / angular_velocity
             predict_theta = current_theta + angular_velocity * dt
             self.state[0] = self.state[0] + R*(-np.sin(current_theta) + np.sin(predict_theta))
-            self.state[1] = self.state[1] + R*(np.cos(current_theta) - np.sin(predict_theta))
+            self.state[1] = self.state[1] + R*(np.cos(current_theta) + np.cos(predict_theta))
             self.state[2] = predict_theta
         else:
             self.state[0] = self.state[0] + linear_velocity * dt * np.cos(self.state[2])
