@@ -23,37 +23,14 @@ class Robot:
         # Apply the velocities
         dt = drive_meas.dt
         # TODO: compute state (x,y,theta) from linear and angular velocity
-
-        # ------------------------------------------
-        # ----------- Add your code here -----------
-        #x = self.state[0]
-        #y = self.state[1]
-        #theta = self.state[2]
-
-        #if angular_velocity == 0:
-        #    next_x = x +np.cos(theta)*linear_velocity*dt
-        #    next_y = y +np.sin(theta)*linear_velocity*dt
-        #    next_theta = theta
-        #else:
-        #    R = linear_velocity/angular_velocity
-        #    next_theta = theta + angular_velocity*dt
-        #    next_x = x + R*(-np.sin(theta)+np.sin(next_theta))
-        #    next_y = y + R*(np.cos(theta)+np.cos(next_theta))
-        ## ------------------------------------------
-        #return next_x, next_y, next_theta
-
-        current_x = self.state[0]
-        current_y = self.state[1]
         current_theta = self.state[2]
-        
-        predict_state = np.zeros((3,1))
 
         if angular_velocity != 0:
             # Radius of curvature
             R = linear_velocity / angular_velocity
             predict_theta = current_theta + angular_velocity * dt
             self.state[0] = self.state[0] + R*(-np.sin(current_theta) + np.sin(predict_theta))
-            self.state[1] = self.state[1] + R*(np.cos(current_theta) + np.cos(predict_theta))
+            self.state[1] = self.state[1] + R*(np.cos(current_theta) - np.cos(predict_theta))
             self.state[2] = predict_theta
         else:
             self.state[0] = self.state[0] + linear_velocity * dt * np.cos(self.state[2])

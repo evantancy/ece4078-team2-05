@@ -14,7 +14,7 @@ def calibrateWheelRadius(ppi):
     # by comparing the time and distance driven to the input wheel velocities.
 
     # wheel_velocities = range(20, 81, 15)
-    wheel_velocities = [20]
+    wheel_velocities = [60]
     delta_times = []
 
     for wheel_vel in wheel_velocities:
@@ -96,7 +96,7 @@ def calibrateBaseline(ppi, scale):
 
 if __name__ == "__main__":
     # calibrate pibot scale and baseline
-    dataDir = "{}/wheel_calibration/".format(os.getcwd())
+    dataDir = "{}/calibration/wheel_calibration/".format(os.getcwd())
 
     ppi = PenguinPiC.PenguinPi()
 

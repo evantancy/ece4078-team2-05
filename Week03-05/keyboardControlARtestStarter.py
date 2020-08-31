@@ -9,7 +9,7 @@ import cv2.aruco as aruco
 
 # replace with your own keyboard teleoperation codes
 class Keyboard:
-    def __init__(self, ppi=None, forward_vel=100, turning_vel=40):
+    def __init__(self, ppi=None, forward_vel=60, turning_vel=40):
         # storage for key presses
         self.directions = [False for _ in range(4)]
         self.signal_stop = False 
@@ -118,7 +118,7 @@ class Keyboard:
         if self.signal_stop == True:
             left_target = 0
             right_target = 0
-            self.wheel_vel_forward = 100
+            self.wheel_vel_forward = 60
             self.wheel_vel_turning = 40
             self.signal_stop = False
         else:

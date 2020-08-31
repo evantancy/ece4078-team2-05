@@ -8,7 +8,7 @@ import os, sys
 import json
 
 # Import keyboard teleoperation components
-import penguinPiC
+import PenguinPiC
 import keyboardControlARtestStarter as Keyboard
 
 # Import SLAM components
@@ -34,7 +34,8 @@ class Operate:
         camera_matrix, dist_coeffs, scale, baseline = self.getCalibParams(datadir)
 
         # SLAM components
-        self.pibot = Robot.Robot(baseline, scale, camera_matrix, dist_coeffs)
+        #self.pibot = Robot.Robot(baseline, scale, camera_matrix, dist_coeffs)
+        self.pibot = Robot.Robot(baseline*0.7, scale*1.5, camera_matrix, dist_coeffs)
         self.aruco_det = aruco.aruco_detector(self.pibot, marker_length=0.1)
         self.slam = Slam.Slam(self.pibot)
 
@@ -56,7 +57,7 @@ class Operate:
 
     def control(self):
         # Import teleoperation control signals
-        lv, rv = self.keyboard.latest_drive_signal()
+        [lv, rv, _] = self.keyboard.latest_drive_signal()
         drive_meas = Measurements.DriveMeasurement(lv, rv, dt=0.3)
         self.slam.predict(drive_meas)
 
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     currentDir = os.getcwd()
     datadir = "{}/calibration/".format(currentDir)
     # connect to the robot
-    ppi = penguinPiC.PenguinPi()
+    ppi = PenguinPiC.PenguinPi()
 
     # Perform Manual SLAM
     operate = Operate(datadir, ppi)
