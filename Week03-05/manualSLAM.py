@@ -36,7 +36,8 @@ class Operate:
         # SLAM components
         #self.pibot = Robot.Robot(baseline, scale, camera_matrix, dist_coeffs)
         #self.pibot = Robot.Robot(baseline*1.2, scale*1.5, camera_matrix, dist_coeffs)
-        self.pibot = Robot.Robot(baseline*0.7, scale, camera_matrix, dist_coeffs)
+        #self.pibot = Robot.Robot(baseline*0.7, scale, camera_matrix, dist_coeffs)
+        self.pibot = Robot.Robot(baseline*0.8, scale, camera_matrix, dist_coeffs)
         self.aruco_det = aruco.aruco_detector(self.pibot, marker_length=0.1)
         self.slam = Slam.Slam(self.pibot)
 
