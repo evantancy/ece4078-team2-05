@@ -6,8 +6,8 @@
 - Press arrow keys to control the robot 
 
 Highlights for running the robot in another environment:
-	1. If there are any marker on sight by rotating, rotate a couple of times before moving on to the next marker.
-	2. Make sure to align the predicted arrow with the actual direction the robot is facing (by pressing A and D back and forth until it matches) before scanning a marker.
+	1. If there are any marker on sight, start scanning by rotating couple of times before moving on to the next marker.
+	2. Make sure to align the predicted arrow with the actual direction the robot is facing (by pressing right and left arrows multiple times until it matches) before moving forward or backward to scan a marker.
 
 Recommended path for full mark in penguinpi_arena (all within 1.5m range):
 	- Wheel_calibration values: 3.6s and 27.7 seconds
