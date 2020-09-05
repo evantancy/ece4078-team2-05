@@ -56,7 +56,7 @@ def calibrateBaseline(ppi, scale):
     # velocities to find out the distance between the wheels.
 
     # Feel free to change the range / step
-    wheel_velocities = [20]#range(30, 60, 10)
+    wheel_velocities = [28]#range(30, 60, 10)
     delta_times = []
 
     for wheel_vel in wheel_velocities:

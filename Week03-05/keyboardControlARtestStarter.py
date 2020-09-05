@@ -9,7 +9,7 @@ import cv2.aruco as aruco
 
 # replace with your own keyboard teleoperation codes
 class Keyboard:
-    def __init__(self, ppi=None, forward_vel=60, turning_vel=20):
+    def __init__(self, ppi=None, forward_vel=60, turning_vel=28):
         # storage for key presses
         self.directions = [False for _ in range(4)]
         self.signal_stop = False 
@@ -36,16 +36,16 @@ class Keyboard:
             self.signal_stop = activate
         
         try:
-            if str(key.char).lower() == 'w':
+            if key == Key.up:
                 self.directions[0] = activate
                 
-            elif str(key.char).lower() == 's':
+            elif key == Key.down:
                 self.directions[1] = activate
                 
-            elif str(key.char).lower() == 'a':
+            elif key == Key.left:
                 self.directions[2] = activate
                 
-            elif str(key.char).lower() == 'd':
+            elif key == Key.right:
                 self.directions[3] = activate
                 
         except AttributeError:
@@ -57,22 +57,24 @@ class Keyboard:
         Args:
             key (Key): keyboard input
         """
-
-        if key == Key.up:
-            if self.wheel_vel_forward < 300:
-                self.wheel_vel_forward += 5
+        try:
+            if str(key.char).lower() == 'w':
+                if self.wheel_vel_forward < 300:
+                    self.wheel_vel_forward += 5
             
-        elif key == Key.down:
-            if self.wheel_vel_forward > 0:
-                self.wheel_vel_forward -= 5
+            elif str(key.char).lower() == 's':
+                if self.wheel_vel_forward > 0:
+                    self.wheel_vel_forward -= 5
             
-        elif key == Key.left:
-            if self.wheel_vel_turning > 0:
-                self.wheel_vel_turning -= 2
+            elif str(key.char).lower() == 'a': 
+                if self.wheel_vel_turning > 0:
+                    self.wheel_vel_turning -= 2
             
-        elif key == Key.right:
-            if self.wheel_vel_turning < 100:
-                self.wheel_vel_turning += 2
+            elif str(key.char).lower() == 'd':
+                if self.wheel_vel_turning < 100:
+                    self.wheel_vel_turning += 2
+        except AttributeError:
+            pass
 
     def on_press(self, key):
         """Function call when keys are pressed
@@ -119,7 +121,7 @@ class Keyboard:
             left_target = 0
             right_target = 0
             self.wheel_vel_forward = 60
-            self.wheel_vel_turning = 20
+            self.wheel_vel_turning = 28
             self.signal_stop = False
         else:
             """Update direction - check within directions array and adjust left and right wheel velocity accordingly"""
