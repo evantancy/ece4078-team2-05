@@ -34,18 +34,18 @@
     ]
 
 Highlights for running the robot in another environment:
-	1. If a marker has been detected, start scanning by rotating a couple of times left and right before moving on to the next marker.
-	2. If you can, please do your best to align the predicted arrow with the actual direction the robot is facing (by pressing right and left arrows multiple times until it matches) before moving forward or backward to scan a marker. However our marker does not deviate too far from the true position, so this hopefully shouldnt be an issue.
+- If a marker has been detected, start scanning by rotating a couple of times left and right before moving on to the next marker.
+- If you can, please do your best to align the predicted arrow with the actual direction the robot is facing (by pressing right and left arrows multiple times until it matches) before moving forward or backward to scan a marker. However our marker does not deviate too far from the true position, so this hopefully shouldnt be an issue.
 
 Recommended path for full mark in penguinpi_arena (all within 1.5m range):
-	1. From start position, scan left and right around 1-2 times to get an accurate position of markers 11 and 5. 
-	2. After scanning, facing slightly to the right of the sheep (so we don't collide) go towards marker 9 and the robot will scan marker 9.
-	3. Steer around 90 degrees to the left after passing the sheep, towards marker 7. Once almost perpendicular to marker 7, rotate to the right to scan it.
-	4. Steer around 150 degrees to the left, towards marker 3, until it is succefully picked up. Then drive towards it until you are within a metre of it.
-	5. rotate 360 degrees on the spot to pick up markers 7 and 9 again (if they are visible), until you face marker 3 again.
-	6. Next, rotate to the left (away from marker 3) on a path towards marker 1, drive staright until marker 1 is visible, and adjust the path so that when possible you are travelling straight down (-pi/2 radians in world frame).
-	7. Stop once you almost reach the beginning of the corridor, then turn left (from the robots perspective) to pick up markers 11 and 5 again, then stop.
-	8. End
+- From start position, scan left and right around 1-2 times to get an accurate position of markers 11 and 5. 
+- After scanning, facing slightly to the right of the sheep (so we don't collide) go towards marker 9 and the robot will scan marker 9.
+- Steer around 90 degrees to the left after passing the sheep, towards marker 7. Once almost perpendicular to marker 7, rotate to the right to scan it.
+- Steer around 150 degrees to the left, towards marker 3, until it is succefully picked up. Then drive towards it until you are within a metre of it.
+- rotate 360 degrees on the spot to pick up markers 7 and 9 again (if they are visible), until you face marker 3 again.
+- Next, rotate to the left (away from marker 3) on a path towards marker 1, drive staright until marker 1 is visible, and adjust the path so that when possible you are travelling straight down (-pi/2 radians in world frame).
+- Stop once you almost reach the beginning of the corridor, then turn left (from the robots perspective) to pick up markers 11 and 5 again, then stop.
+- End
 	
 Please see our video (~2 mins) titled "PenguinPi_M2_Best_Run.mp4" to see one of our best test runs and the path we have described above, also note the video is running at 4x speed.
 
