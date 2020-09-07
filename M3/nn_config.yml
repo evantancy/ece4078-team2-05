@@ -25,7 +25,7 @@ n_epochs: 50
 # adding a penalty to the cost which can lead to smaller model weights
 weight_decay: 1.0e-5
 
-# 3 categories (no changes needed): 
+# 3 categories (no changes needed):
 # coke = class 0, neither = class 1, sheep = class 2
 num_classes: 3
 
@@ -37,7 +37,7 @@ load_best: 1
 # GPU option (no changes needed)
 gpu_ids: '0'
 
-# learning rate scheduler (can be tuned): 
+# learning rate scheduler (can be tuned):
 # controls how fast the learning rate decreases
 # here, the learning rate is designed to be its 50% every 5 epoch.
 lr_scheduler:

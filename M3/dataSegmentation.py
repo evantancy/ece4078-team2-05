@@ -13,7 +13,7 @@ def check_folder(folder):
         os.makedirs(folder)
 
 # segment images into training, evaluation, and testing set with balanced classes
-def parse_label_file(img_folder: str, dest_root: str):
+def parse_label_file(img_folder, dest_root):
     # read in the label file
     csv_file = os.path.join(img_folder, 'labels.csv')
     df = pd.read_csv(csv_file, header = None)

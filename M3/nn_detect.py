@@ -53,6 +53,7 @@ class Evaluate:
                                                        anchor_h2ws,
                                                        anchor_heights)
             all_anchors += anchors_temp
+
         anchor_imdb = AnchorIMDB(all_anchors)
         anchor_loader = DataLoader(anchor_imdb,
                                    batch_size=num_patches*num_anchors,
@@ -87,8 +88,11 @@ class Evaluate:
         """
         h, w = heat_map.shape
         out = np.ones((h, w, 3))
+        # Red
         sheep = np.array([245, 114, 66])/255.0
-        coke = np.array([80, 80, 80])/255.0
+        # Grey
+        coke = np.array([66, 245, 114])/255.0
+        # Blue
         neither = np.array([66, 135, 245])/255.0
         for i in range(h):
             for j in range(w):

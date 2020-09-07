@@ -8,6 +8,7 @@ import torchvision.models as models
 
 
 class BaselineNet(nn.Module):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     def __init__(self, num_classes=3):
         super(BaselineNet, self).__init__()
         pre_trained_backbone = models.alexnet(pretrained=True)
