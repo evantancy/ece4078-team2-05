@@ -7,8 +7,10 @@ import cv2
 import os
 import sys
 
-import penguinPiC
-ppi = penguinPiC.PenguinPi()
+import PenguinPiC
+ppi = PenguinPiC.PenguinPi()
+
+import keyboardControlARtestStarter as Keyboard
 
 # save images and a csv file with each row being [image_label,image_file_name]
 class DatasetWriter:
@@ -20,6 +22,7 @@ class DatasetWriter:
         img_fname = self.folder + "labels.csv"
         self.img_f = open(img_fname, 'a')
         self.img_fc = csv.writer(self.img_f)
+	
     
     def __del__(self):
         self.img_f.close()
@@ -52,6 +55,8 @@ def inputNumber(message):
 # main program
 if __name__ == "__main__":
     # collect data
+    # Keyboard teleoperation components
+    keyboard_control = Keyboard.Keyboard(ppi)
     images_to_collect = inputNumber('Please enter how many images you would like to collect:\n')
     for i in range(images_to_collect):
         input('Press ENTER to capture an image.')
