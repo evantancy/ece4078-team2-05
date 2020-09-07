@@ -37,8 +37,8 @@ class GazeboServiceCaller:
     def set_model(self, position, orientation, entity=None):
         """Set model to specific position and orientation
         Args:
-            position (2x1 List): [x,y] coordinates
-            orientation (int): Rotation about z axis
+            position (1x3 List[int]): [x,y,z] coordinates
+            orientation (1x3 List[int]): [roll,pitch,yaw] angles
             entity (String, optional): Name of entity i.e. link/joint. Defaults to None.
         """
         rospy.init_node('set_pose')
@@ -51,6 +51,8 @@ class GazeboServiceCaller:
         roll = orientation[0]
         pitch = orientation[1]
         yaw = orientation[2]
+
+        # Convert Euler angles to quaternion
         state_msg.pose.orientation.x = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
         state_msg.pose.orientation.y = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
         state_msg.pose.orientation.z = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
