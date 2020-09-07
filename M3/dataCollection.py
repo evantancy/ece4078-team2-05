@@ -61,23 +61,29 @@ if __name__ == "__main__":
     # Keyboard teleoperation components
     # keyboard_control = Keyboard.Keyboard(ppi)
     # model_name = str(input("Specify model"))
+
     position = inputNumber("How many positions to take pictures of robot?:\n")
 
-    n_rotations = 10
-    angle = 2 * 3.14 / n_rotations
+    sheep_caller = GazeboServiceCaller("sheep1")
+    ppi_caller = GazeboServiceCaller("PenguinPi")
 
+    n_rotations = 10
+    angle = 2 * np.pi / n_rotations
+    
     for i in range(position):
-        ppi_caller = GazeboServiceCaller("PenguinPi")
-        ppi_caller.set_model([i, 0], 0)
+        sheep_caller.set_model([10, 0,0], [0,0,0])
+        ppi_caller.set_model([i, 0,0.012793], [-0.007493,-0.055376,0])
         check = input("Is robot in right position[y/n]\n")
+
         if check.lower() == "y":
-            sheep_caller = GazeboServiceCaller("sheep1")
-            sheep_caller.set_model([i + 1, 0], 0)
+
+            sheep_caller.set_model([i + 1, 0,0], [0,0,0])
             check = input("Is sheep in right position[y/n]\n")
             if check.lower() == "y":
                 for j in range(n_rotations):
-                    sheep_caller.set_model([i + 1, 0], j * angle)
-                    time.sleep(5)
+
+                    sheep_caller.set_model([i + 1, 0,0], [0,0,j*angle])
+                    time.sleep(0.05)
                     # annot = inputNumber('Label this image by entering 0, 1, or 2 (0 = sheep, 1 = coke, 2 = neither):\n')
                     annot = 0
                     image_count = i * n_rotations + j
