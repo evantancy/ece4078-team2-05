@@ -20,7 +20,7 @@ class GazeboServiceCaller:
         """
         rospy.ServiceProxy("/gazebo/reset_world", Empty)
 
-    def print_model_state(self, entity=None):
+    def return_model_state(self, entity=None):
         """Call get_model_state service to get latest state from Gazebo
         Args:
             model (string): Name of model
@@ -30,9 +30,10 @@ class GazeboServiceCaller:
         gms = rospy.ServiceProxy("/gazebo/get_model_state", GetModelState)
         result = gms(self.model_name, entity)
         position = result.pose.position
-        print(f"{position}")
+        position = [position.x,position.y,position.z]
         orientation = result.pose.orientation
-        print(f"{orientation}")
+        orientation = [orientation.x,orientation.y,orientation.z,orientation.w]
+        return position,orientation
 
     def set_model(self, position, orientation, entity=None):
         """Set model to specific position and orientation
