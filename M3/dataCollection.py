@@ -88,7 +88,7 @@ if __name__ == "__main__":
     phi = np.linspace(-0.6,0.6,3)
     model_dist = np.linspace(0.7,3,6)
     fov = 1.0855
-    
+
     take_images = True
 
     #get an array of suitable x,y positions of ppi
@@ -106,8 +106,8 @@ if __name__ == "__main__":
                     np.savetxt('ay.txt',y_ppi,fmt = '%f')
 
     #choose model
-    sheep = True
-    coke = False
+    sheep = False
+    coke = True
     neither = False
 
     #image taking section
@@ -156,7 +156,7 @@ if __name__ == "__main__":
                                     print("Collected image No.", image_count)
                                     image_count += 1
         print("Finished data collection.\n")
-    
+
     if take_images and coke:
         image_count = 0
         ppi_pos = np.zeros(0)

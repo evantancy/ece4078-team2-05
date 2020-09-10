@@ -19,7 +19,7 @@ batch_size: 64
 # total number of epochs (can be tuned):
 # when to stop the training
 # a higher number of epochs can lead to overfitting
-n_epochs: 50
+n_epochs: 13
 
 # weight decay (can be tuned):
 # adding a penalty to the cost which can lead to smaller model weights
