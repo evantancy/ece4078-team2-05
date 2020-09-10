@@ -160,6 +160,7 @@ if __name__ == "__main__":
         print("Finished data collection.\n")
 
     if take_images and coke:
+        phi = np.linspace(-0.5,0.5,3)
         model_dist = [0.35,0.5,0.75,1,2,3]
         image_count = 0
         ppi_pos = np.zeros(0)
@@ -208,7 +209,7 @@ if __name__ == "__main__":
         print("Finished data collection.\n")
 
     if take_images and neither:
-        ppi_rotations = 12
+        ppi_rotations = 120
         d_th_ppi = 2 * np.pi / ppi_rotations
         image_count = 0
         ppi_pos = np.zeros(0)
