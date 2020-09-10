@@ -106,9 +106,9 @@ if __name__ == "__main__":
                     np.savetxt('ay.txt',y_ppi,fmt = '%f')
 
     #choose model
-    sheep = True
+    sheep = False
     coke = False
-    neither = False
+    neither = True
 
     #image taking section
     if take_images and sheep:
@@ -143,16 +143,16 @@ if __name__ == "__main__":
                                     annot = 0 #annot = inputNumber('Label this image by entering 0, 1, or 2 (0 = sheep, 1 = coke, 2 = neither):\n')
                                     data = DatasetWriter(annot, image_count,"sheep/")
 
-                                    pos1,ori1 = ppi_caller.return_model_state()
-                                    ppi_pos = np.append(ppi_pos,[pos1])
-                                    ppi_ori = np.append(ppi_ori,[ori1])
-                                    pos2,ori2 = sheep1_caller.return_model_state()
-                                    m_pos = np.append(m_pos,[pos2])
-                                    m_ori = np.append(m_ori,[ori2])
-                                    np.savetxt('dataset/sheep/ppi_pos.txt',ppi_pos,fmt = '%f')
-                                    np.savetxt('dataset/sheep/ppi_ori.txt',ppi_ori,fmt = '%f')
-                                    np.savetxt('dataset/sheep/m_pos.txt',m_pos,fmt = '%f')
-                                    np.savetxt('dataset/sheep/m_ori.txt',m_ori,fmt = '%f')
+                                    #pos1,ori1 = ppi_caller.return_model_state()
+                                    #ppi_pos = np.append(ppi_pos,[pos1])
+                                    #ppi_ori = np.append(ppi_ori,[ori1])
+                                    #pos2,ori2 = sheep1_caller.return_model_state()
+                                    #m_pos = np.append(m_pos,[pos2])
+                                    #m_ori = np.append(m_ori,[ori2])
+                                    #np.savetxt('dataset/sheep/ppi_pos.txt',ppi_pos,fmt = '%f')
+                                    #np.savetxt('dataset/sheep/ppi_ori.txt',ppi_ori,fmt = '%f')
+                                    #np.savetxt('dataset/sheep/m_pos.txt',m_pos,fmt = '%f')
+                                    #np.savetxt('dataset/sheep/m_ori.txt',m_ori,fmt = '%f')
 
                                     data.write_image()
                                     print("Collected image No.", image_count)
@@ -191,16 +191,16 @@ if __name__ == "__main__":
                                     annot = 1 #annot = inputNumber('Label this image by entering 0, 1, or 2 (0 = sheep, 1 = coke, 2 = neither):\n')
                                     data = DatasetWriter(annot, image_count,"coke/")
 
-                                    pos1,ori1 = ppi_caller.return_model_state()
-                                    ppi_pos = np.append(ppi_pos,[pos1])
-                                    ppi_ori = np.append(ppi_ori,[ori1])
-                                    pos2,ori2 = coke1_caller.return_model_state()
-                                    m_pos = np.append(m_pos,[pos2])
-                                    m_ori = np.append(m_ori,[ori2])
-                                    np.savetxt('dataset/coke/ppi_pos.txt',ppi_pos,fmt = '%f')
-                                    np.savetxt('dataset/coke/ppi_ori.txt',ppi_ori,fmt = '%f')
-                                    np.savetxt('dataset/coke/m_pos.txt',m_pos,fmt = '%f')
-                                    np.savetxt('dataset/coke/m_ori.txt',m_ori,fmt = '%f')
+                                    #pos1,ori1 = ppi_caller.return_model_state()
+                                    #ppi_pos = np.append(ppi_pos,[pos1])
+                                    #ppi_ori = np.append(ppi_ori,[ori1])
+                                    #pos2,ori2 = coke1_caller.return_model_state()
+                                    #m_pos = np.append(m_pos,[pos2])
+                                    #m_ori = np.append(m_ori,[ori2])
+                                    #np.savetxt('dataset/coke/ppi_pos.txt',ppi_pos,fmt = '%f')
+                                    #np.savetxt('dataset/coke/ppi_ori.txt',ppi_ori,fmt = '%f')
+                                    #np.savetxt('dataset/coke/m_pos.txt',m_pos,fmt = '%f')
+                                    #np.savetxt('dataset/coke/m_ori.txt',m_ori,fmt = '%f')
 
                                     data.write_image()
                                     print("Collected image No.", image_count)
@@ -226,11 +226,11 @@ if __name__ == "__main__":
                 annot = 2 #annot = inputNumber('Label this image by entering 0, 1, or 2 (0 = sheep, 1 = coke, 2 = neither):\n')
                 data = DatasetWriter(annot, image_count,"neither/")
 
-                pos1,ori1 = ppi_caller.return_model_state()
-                ppi_pos = np.append(ppi_pos,[pos1])
-                ppi_ori = np.append(ppi_ori,[ori1])
-                np.savetxt('dataset/neither/ppi_pos.txt',ppi_pos,fmt = '%f')
-                np.savetxt('dataset/neither/ppi_ori.txt',ppi_ori,fmt = '%f')
+                #pos1,ori1 = ppi_caller.return_model_state()
+                #ppi_pos = np.append(ppi_pos,[pos1])
+                #ppi_ori = np.append(ppi_ori,[ori1])
+                #np.savetxt('dataset/neither/ppi_pos.txt',ppi_pos,fmt = '%f')
+                #np.savetxt('dataset/neither/ppi_ori.txt',ppi_ori,fmt = '%f')
 
                 data.write_image()
                 print("Collected image No.", image_count)
