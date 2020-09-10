@@ -106,12 +106,14 @@ if __name__ == "__main__":
                     np.savetxt('ay.txt',y_ppi,fmt = '%f')
 
     #choose model
-    sheep = False
-    coke = True
+    sheep = True
+    coke = False
     neither = False
 
     #image taking section
     if take_images and sheep:
+        phi = np.linspace(-0.5,0.5,3)
+        model_dist = [0.55,0.65,0.8,1,2,3]
         image_count = 0
         ppi_pos = np.zeros(0)
         ppi_ori = np.zeros(0)
@@ -158,6 +160,7 @@ if __name__ == "__main__":
         print("Finished data collection.\n")
 
     if take_images and coke:
+        model_dist = [0.35,0.5,0.75,1,2,3]
         image_count = 0
         ppi_pos = np.zeros(0)
         ppi_ori = np.zeros(0)
