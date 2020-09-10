@@ -2,7 +2,7 @@
 # you may change them to improve the performance
 
 # change the experiment name to start training a new one
-exp_name: 'pre_trained_01'
+exp_name: 'pre_trained_10'
 
 
 # initial learning rate (can be tuned):
