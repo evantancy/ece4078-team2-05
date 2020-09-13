@@ -2,24 +2,24 @@
 # you may change them to improve the performance
 
 # change the experiment name to start training a new one
-exp_name: 'pre_trained_11'
+exp_name: 'pre_trained_42'
 
 
 # initial learning rate (can be tuned):
 # the starting point for the learning rate scheduler
 # a learning rate too high can lead to exploding or fluctuating loss
 # a learning rate too low can lead to slow learning or overfitting
-init_lr: 1.0e-5
+init_lr: 1.0e-3
 
 # batch size (can be tuned):
 # a smaller batch size means the parameters are updated using a smaller subset of the data
 # thus the parameter update will be more noisy, but the model may have better generalizability
-batch_size: 64
+batch_size: 128
 
 # total number of epochs (can be tuned):
 # when to stop the training
 # a higher number of epochs can lead to overfitting
-n_epochs: 13
+n_epochs: 15
 
 # weight decay (can be tuned):
 # adding a penalty to the cost which can lead to smaller model weights
@@ -41,6 +41,6 @@ gpu_ids: '0'
 # controls how fast the learning rate decreases
 # here, the learning rate is designed to be its 50% every 5 epoch.
 lr_scheduler:
-    step_size: 5
-    gamma: 0.50
+    step_size: 1
+    gamma: 0.9
 

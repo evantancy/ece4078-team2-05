@@ -167,7 +167,8 @@ class AnchorIMDB(Dataset):
 
 if __name__ == '__main__':
     exp = Evaluate()
-    img_path = './dataset_test/All/sheep/1.png'
+    #img_path = './dataset_test/All/sheep/1.png'
+    img_path = './test.png'
     img = Image.open(img_path)
     heat_map = exp.sliding_window(img)
     exp.visualise_heatmap(heat_map, img)

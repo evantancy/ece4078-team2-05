@@ -24,7 +24,11 @@ def parse_label_file(img_folder, dest_root, label):
 
     # segment by label
     # for i in range(row_count):
-    for i in range(row_count):
+    #if label == 'coke/':
+    #    sel = 5
+    #else:
+    sel = 1
+    for i in range(0,row_count,sel):
         img_label = df[0][i]
         img_name = df[1][i]
         # img_path = os.path.join(img_folder, img_name)
