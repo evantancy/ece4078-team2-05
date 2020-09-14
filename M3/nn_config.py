@@ -38,12 +38,14 @@ class NNState:
             self.n_epochs = cfg["n_epochs"]
             self.init_lr = cfg["init_lr"]
             self.exp_name = cfg["exp_name"]
+            self.num_workers = 0
         else:
             print(f"NOT USING master_config.yaml")
             self.batch_size = params["batch_size"]
             self.n_epochs = params["n_epochs"]
             self.init_lr = params["init_lr"]
             self.exp_name = params["exp_name"]
+            self.num_workers = params["num_workers"]
             lr_step_size = params["lr_scheduler"]["step_size"]
             lr_gamma = params["lr_scheduler"]["gamma"]
             decay = params["weight_decay"]
@@ -120,11 +122,6 @@ class NNState:
         folder_path = os.path.join("net_weights", self.exp_name)
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-        if os.path.isfile(ckpt_name):
-            check = input("Overwrite {ckpt_name} for all {self.n_tests} iterations?")
-            if check.lower() == "y":
-                for i in range(self.n_tests):
-                    os.remove(ckpt_name + "_" + str(i))
         ckpt_path = os.path.join("net_weights", self.exp_name, ckpt_name)
         torch.save(state, ckpt_path)  # save checkpoint
         print(f"=> Model Saved in {ckpt_path}")

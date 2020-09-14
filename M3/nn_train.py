@@ -85,7 +85,7 @@ class Train:
         self.net_dict.net = self.net_dict.net.eval()
         eval_loader = DataLoader(dataset=self.eval_data,
                                  batch_size=self.net_dict.batch_size,
-                                 shuffle=False, num_workers=0,
+                                 shuffle=False, num_workers=self.net_dict.num_workers,
                                  drop_last=False)
         n_batch = len(eval_loader)
         with torch.no_grad():
