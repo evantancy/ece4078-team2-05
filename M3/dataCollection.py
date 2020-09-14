@@ -64,7 +64,6 @@ if __name__ == "__main__":
     coke2_caller.set_model([3, 6, 0], [0, 0, 0])
 
     ppi_caller = GazeboServiceCaller("PenguinPi")
-    (init_position, init_orientation) = ppi_caller.return_model_state()
     ppi_caller.set_model([0, 0, 0.012793], [-0.007493, -0.055376, 0])
 
     # specify number of x,y positions of penguinpi
@@ -98,6 +97,7 @@ if __name__ == "__main__":
             check = input("Empty .csv before writing?[y/n]")
             if check.lower() == "y":
                 check_file(csv_path, delete=True)
+
         with open(csv_file, "a") as coordinates_file:
             for ppi_x in np.linspace(x_min, x_max, n_steps):
                 for ppi_y in np.linspace(y_min, y_max, n_steps):
@@ -109,6 +109,7 @@ if __name__ == "__main__":
                         xy = [ppi_x, ppi_y]
                         csv.writer(coordinates_file).writerow(xy)
                         print(f"Saved x:{ppi_x}y:{ppi_y} in ppi_coordinates.csv")
+                    # Exit data collection if q pressed
                     elif check.lower() == "q":
                         break
                 if check.lower() == "q":
@@ -174,90 +175,92 @@ if __name__ == "__main__":
                         continue
             print("Finished data collection.\n")
 
-    if take_images and coke:
-        phi = np.linspace(-0.5, 0.5, 3)
-        model_dist = [0.35, 0.5, 0.75, 1, 2, 3]
-        image_count = 0
-        ppi_pos = np.zeros(0)
-        ppi_ori = np.zeros(0)
-        m_pos = np.zeros(0)
-        m_ori = np.zeros(0)
-        # load arrays of suitable x,y positions of ppi
-        ax = np.loadtxt("ax.txt", dtype=float)
-        ay = np.loadtxt("ay.txt", dtype=float)
-        for a in range(len(ax)):
-            ppi_x = ax[a]
-            ppi_y = ay[a]
-            ppi_caller.set_model([ppi_x, ppi_y, 0.012793], [-0.007493, -0.055376, 0])
-            for i in range(ppi_rotations):
-                ppi_angle = i * d_th_ppi
+        elif model == "coke":
+            phi = np.linspace(-0.5, 0.5, 3)
+            model_dist = [0.35, 0.5, 0.75, 1, 2, 3]
+            image_count = 0
+            ppi_pos = np.zeros(0)
+            ppi_ori = np.zeros(0)
+            m_pos = np.zeros(0)
+            m_ori = np.zeros(0)
+            # load arrays of suitable x,y positions of ppi
+            ax = np.loadtxt("ax.txt", dtype=float)
+            ay = np.loadtxt("ay.txt", dtype=float)
+            for a in range(len(ax)):
+                ppi_x = ax[a]
+                ppi_y = ay[a]
                 ppi_caller.set_model(
-                    [ppi_x, ppi_y, 0.012793], [-0.007493, -0.055376, ppi_angle]
+                    [ppi_x, ppi_y, 0.012793], [-0.007493, -0.055376, 0]
                 )
-                check = input("Is ppi position ok?[y/n]\n")
-                if check.lower() == "y":
-                    for w in phi:
-                        for d in model_dist:
-                            mdl_x = ppi_x + d * np.cos(ppi_angle + w * fov / 2)
-                            mdl_y = ppi_y + d * np.sin(ppi_angle + w * fov / 2)
-                            coke1_caller.set_model([mdl_x, mdl_y, 0], [0, 0, 0])
-                            check = input("Is model position ok?[y/n]\n")
-                            if check.lower() == "y":
+                for i in range(ppi_rotations):
+                    ppi_angle = i * d_th_ppi
+                    ppi_caller.set_model(
+                        [ppi_x, ppi_y, 0.012793], [-0.007493, -0.055376, ppi_angle]
+                    )
+                    check = input("Is ppi position ok?[y/n]\n")
+                    if check.lower() == "y":
+                        for w in phi:
+                            for d in model_dist:
+                                mdl_x = ppi_x + d * np.cos(ppi_angle + w * fov / 2)
+                                mdl_y = ppi_y + d * np.sin(ppi_angle + w * fov / 2)
+                                coke1_caller.set_model([mdl_x, mdl_y, 0], [0, 0, 0])
+                                check = input("Is model position ok?[y/n]\n")
+                                if check.lower() == "y":
 
-                                for j in range(n_rotations):
-                                    coke1_caller.set_model(
-                                        [mdl_x, mdl_y, 0], [0, 0, j * d_theta]
-                                    )
-                                    annot = 1  # annot = inputNumber('Label this image by entering 0, 1, or 2 (0 = sheep, 1 = coke, 2 = neither):\n')
-                                    data = DatasetWriter(image_count)
+                                    for j in range(n_rotations):
+                                        coke1_caller.set_model(
+                                            [mdl_x, mdl_y, 0], [0, 0, j * d_theta]
+                                        )
+                                        data = DatasetWriter(image_count)
 
-                                    # pos1,ori1 = ppi_caller.return_model_state()
-                                    # ppi_pos = np.append(ppi_pos,[pos1])
-                                    # ppi_ori = np.append(ppi_ori,[ori1])
-                                    # pos2,ori2 = coke1_caller.return_model_state()
-                                    # m_pos = np.append(m_pos,[pos2])
-                                    # m_ori = np.append(m_ori,[ori2])
-                                    # np.savetxt('dataset/coke/ppi_pos.txt',ppi_pos,fmt = '%f')
-                                    # np.savetxt('dataset/coke/ppi_ori.txt',ppi_ori,fmt = '%f')
-                                    # np.savetxt('dataset/coke/m_pos.txt',m_pos,fmt = '%f')
-                                    # np.savetxt('dataset/coke/m_ori.txt',m_ori,fmt = '%f')
+                                        # pos1,ori1 = ppi_caller.return_model_state()
+                                        # ppi_pos = np.append(ppi_pos,[pos1])
+                                        # ppi_ori = np.append(ppi_ori,[ori1])
+                                        # pos2,ori2 = coke1_caller.return_model_state()
+                                        # m_pos = np.append(m_pos,[pos2])
+                                        # m_ori = np.append(m_ori,[ori2])
+                                        # np.savetxt('dataset/coke/ppi_pos.txt',ppi_pos,fmt = '%f')
+                                        # np.savetxt('dataset/coke/ppi_ori.txt',ppi_ori,fmt = '%f')
+                                        # np.savetxt('dataset/coke/m_pos.txt',m_pos,fmt = '%f')
+                                        # np.savetxt('dataset/coke/m_ori.txt',m_ori,fmt = '%f')
 
-                                    data.write_image()
-                                    print("Collected image No.", image_count)
-                                    image_count += 1
-        print("Finished data collection.\n")
+                                        data.write_image()
+                                        print("Collected image No.", image_count)
+                                        image_count += 1
+            print("Finished data collection.\n")
 
-    if take_images and neither:
-        ppi_rotations = 120
-        d_th_ppi = 2 * np.pi / ppi_rotations
-        image_count = 0
-        ppi_pos = np.zeros(0)
-        ppi_ori = np.zeros(0)
-        # load arrays of suitable x,y positions of ppi
-        ax = np.loadtxt("ax.txt", dtype=float)
-        ay = np.loadtxt("ay.txt", dtype=float)
-        for a in range(len(ax)):
-            ppi_x = ax[a]
-            ppi_y = ay[a]
-            ppi_caller.set_model([ppi_x, ppi_y, 0.012793], [-0.007493, -0.055376, 0])
-            for i in range(ppi_rotations):
-                ppi_angle = i * d_th_ppi
+        elif model == "neither":
+            ppi_rotations = 120
+            d_th_ppi = 2 * np.pi / ppi_rotations
+            image_count = 0
+            ppi_pos = np.zeros(0)
+            ppi_ori = np.zeros(0)
+            # load arrays of suitable x,y positions of ppi
+            ax = np.loadtxt("ax.txt", dtype=float)
+            ay = np.loadtxt("ay.txt", dtype=float)
+            for a in range(len(ax)):
+                ppi_x = ax[a]
+                ppi_y = ay[a]
                 ppi_caller.set_model(
-                    [ppi_x, ppi_y, 0.012793], [-0.007493, -0.055376, ppi_angle]
+                    [ppi_x, ppi_y, 0.012793], [-0.007493, -0.055376, 0]
                 )
-                annot = 2  # annot = inputNumber('Label this image by entering 0, 1, or 2 (0 = sheep, 1 = coke, 2 = neither):\n')
-                data = DatasetWriter(image_count)
+                for i in range(ppi_rotations):
+                    ppi_angle = i * d_th_ppi
+                    ppi_caller.set_model(
+                        [ppi_x, ppi_y, 0.012793], [-0.007493, -0.055376, ppi_angle]
+                    )
+                    data = DatasetWriter(image_count)
 
-                # pos1,ori1 = ppi_caller.return_model_state()
-                # ppi_pos = np.append(ppi_pos,[pos1])
-                # ppi_ori = np.append(ppi_ori,[ori1])
-                # np.savetxt('dataset/neither/ppi_pos.txt',ppi_pos,fmt = '%f')
-                # np.savetxt('dataset/neither/ppi_ori.txt',ppi_ori,fmt = '%f')
+                    # pos1,ori1 = ppi_caller.return_model_state()
+                    # ppi_pos = np.append(ppi_pos,[pos1])
+                    # ppi_ori = np.append(ppi_ori,[ori1])
+                    # np.savetxt('dataset/neither/ppi_pos.txt',ppi_pos,fmt = '%f')
+                    # np.savetxt('dataset/neither/ppi_ori.txt',ppi_ori,fmt = '%f')
 
-                data.write_image()
-                print("Collected image No.", image_count)
-                image_count += 1
-        print("Finished data collection.\n")
+                    data.write_image()
+                    print("Collected image No.", image_count)
+                    image_count += 1
+            print("Finished data collection.\n")
 
     #####CODE WE'LL NEED LATER TO CALL ROBOT/MODEL POSE:#####
     # hello = np.loadtxt('ppi_pos.txt',dtype=float)

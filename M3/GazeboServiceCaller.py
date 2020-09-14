@@ -1,3 +1,4 @@
+import roslib
 import rospy
 import rospkg
 from std_srvs.srv import Empty
@@ -31,8 +32,8 @@ class GazeboServiceCaller:
         result = gms(self.model_name, entity)
         position = result.pose.position
         position = [position.x, position.y, position.z]
-        orientation = result.pose.orientation
-        orientation = [orientation.x, orientation.y, orientation.z, orientation.w]
+        orientation_q = result.pose.orientation
+        orientation = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
         return position, orientation
 
     def set_model(self, position, orientation, entity=None):
@@ -64,9 +65,6 @@ class GazeboServiceCaller:
         state_msg.pose.orientation.w = np.cos(roll / 2) * np.cos(pitch / 2) * np.cos(
             yaw / 2
         ) + np.sin(roll / 2) * np.sin(pitch / 2) * np.sin(yaw / 2)
-
-        # print(f"new pose: x: {position[0]} y: {position[1]}\n")
-        # print(f"new yaw: {orientation}")
         try:
             set_state = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
             set_state(state_msg)

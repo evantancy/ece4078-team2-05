@@ -6,7 +6,6 @@ collection:
     n_positions: 10
     n_rotations: 6
   object:
-    n_positions:
     n_rotations: 30
   x_min: -2
   x_max: 3
@@ -15,11 +14,11 @@ collection:
   n_steps: 15
   max_images:
   taking_images: True
-segmentation:
+
 training:
-  exp_name: 'pre_trained_43'
-  init_lr: 1.0e-4
-  batch_size: 256
+  exp_name: 'trained_1'
+  init_lr: 5.0e-3
+  batch_size: 128
   n_epochs: 15
   weight_decay: 1.0e-5
   num_classes: 3
@@ -28,3 +27,8 @@ training:
   lr_scheduler:
       step_size: 1
       gamma: 0.9
+
+testing:
+  n_tests: 3
+
+mode: "training"
