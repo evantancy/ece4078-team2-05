@@ -9,10 +9,10 @@ import torch
 import torch.nn as nn
 
 from baseline_net import BaselineNet
-from yml_utils import load_cfg
+from utils import load_yaml
 from torch.optim import lr_scheduler
 
-cfg = load_cfg('nn_config.yml')
+cfg = load_yaml('master_config.yaml')['training']
 os.environ['CUDA_VISIBLE_DEVICES'] = cfg['gpu_ids']
 
 

@@ -1,0 +1,32 @@
+collection:
+  label_select: 0
+  labels: ["sheep", "coke", "neither"]
+  ppi_csv: "ppi_coordinates.csv"
+  ppi:
+    n_positions: 10
+    n_rotations: 6
+  object:
+    n_positions:
+    n_rotations: 30
+  x_min: -2
+  x_max: 3
+  y_min: -0.25
+  y_max: 4
+  n_steps: 15
+  max_images:
+  taking_images: True
+segmentation:
+  #TODO allow usage of list for overnight training
+training:
+  exp_name: 'pre_trained_42'
+  n_tests: 5
+  init_lr: 1.0e-3 #[1.0e-4,1.0e-4,1.0e-4,1.0e-4,1.0e-4]
+  batch_size: 128 #[256,256,256,256,256]
+  n_epochs: 15
+  weight_decay: 1.0e-5
+  num_classes: 3
+  load_best: 1
+  gpu_ids: '0'
+  lr_scheduler:
+      step_size: 1
+      gamma: 0.9
