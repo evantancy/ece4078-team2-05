@@ -1,4 +1,5 @@
 import subprocess
+import os
 
 # Default prefixes for installing apt or pip packages
 interpreter = "python3 "
@@ -7,17 +8,13 @@ interpreter = "python3 "
 cmd_list = []
 
 # Remove previously trained data
-#TODO Load training set from nn_config.yml
-file_name = 'pre_trained_01.best.pth.tar'
+file_name = "pre_trained_01.best.pth.tar"
+subprocess.call()
 
-script_list = ["dataSegmentation.py",
-                "nn_train.py",
-                "nn_detect.py",
-                "nn_test.py"]
+script_list = ["dataSegmentation.py", "nn_train.py", "nn_detect.py", "nn_test.py"]
 
 
 for script in script_list:
-
     cmd_list.append(interpreter + script)
 
 print("List of commands to run")
