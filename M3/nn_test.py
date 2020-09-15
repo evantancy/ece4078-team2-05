@@ -40,7 +40,7 @@ class Test:
         #  transforms.Normalize(mean=[0.485, 0.456, 0.406],
         #                       std=[0.229, 0.224, 0.225])])
         self.eval_data = datasets.ImageFolder(
-            "./dataset_segmented/All/", transform=img_transforms
+            "./dataset_segmented/test/", transform=img_transforms
         )
 
     def eval(self):

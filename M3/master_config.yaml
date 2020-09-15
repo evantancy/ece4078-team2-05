@@ -30,5 +30,5 @@ training:
 
 testing:
   n_tests: 3
-
-mode: "training"
+# Testing, training, or detecting
+mode: "testing"
