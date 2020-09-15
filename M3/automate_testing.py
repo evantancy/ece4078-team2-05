@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     if mode == "testing":
         results = []
-        # Loop through all different params
+        # Loop through all different parameters
         for i in range(n_dataset):
             iteration_name = params["exp_name"] + "_" + str(i)
             print(f"\n\n{iteration_name}")
@@ -46,6 +46,8 @@ if __name__ == "__main__":
             _, accuracy = test_caller.eval()
             results.append([iteration_name, accuracy])
 
+        # Record results in .csv
+        # NOTE: This will only append to csv, NOT rewrite it
         with open(results_file_name, "a") as results_file:
             current_time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             csv.writer(results_file).writerow([current_time])
@@ -56,9 +58,15 @@ if __name__ == "__main__":
 
     elif mode == "training":
         check = input("Shutdown after training?[y/n]\n")
-        params = afk_params_dict
-        n_dataset = afk_params_dict["n_dataset"]
+        n_dataset = params["n_dataset"]
 
+        with open(results_file_name, "a") as results_file:
+            csv.writer(results_file).writerow(["Training started"])
+            current_time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            csv.writer(results_file).writerow([current_time])
+        results_file.close()
+
+        # Loop through all different parameters
         for i in range(n_dataset):
             iteration_name = params["exp_name"] + "_" + str(i)
             current_params = {
@@ -77,10 +85,12 @@ if __name__ == "__main__":
             train_caller = Train(current_params)
             train_caller.train()
 
+        # Record finish time
         with open(results_file_name, "a") as results_file:
             csv.writer(results_file).writerow(["Training finished"])
             current_time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
             csv.writer(results_file).writerow([current_time])
         results_file.close()
+
         if check.lower() == "y":
             subprocess.call("shutdown")

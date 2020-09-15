@@ -15,6 +15,7 @@ collection:
   max_images:
   taking_images: True
 
+# These parameters are used when not passing a custom parameter dictionary in automated_testin.py
 training:
   exp_name: 'trained_1'
   init_lr: 5.0e-3
@@ -28,7 +29,5 @@ training:
       step_size: 1
       gamma: 0.9
 
-testing:
-  n_tests: 3
-# Testing, training, or detecting
+# Testing, training
 mode: "testing"

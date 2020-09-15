@@ -26,21 +26,17 @@ class NNState:
     """
 
     def __init__(self, mode, params=None):
-        # Load training config
-        cfg = load_yaml("master_config.yaml")["training"]
-
         lr_step_size = cfg["lr_scheduler"]["step_size"]
         lr_gamma = cfg["lr_scheduler"]["gamma"]
         decay = cfg["weight_decay"]
         if params == None:
-            print(f"Using values in master_config.yaml")
             self.batch_size = cfg["batch_size"]
             self.n_epochs = cfg["n_epochs"]
             self.init_lr = cfg["init_lr"]
             self.exp_name = cfg["exp_name"]
             self.num_workers = 0
+            print(f"Using values in master_config.yaml")
         else:
-            print(f"NOT USING master_config.yaml")
             self.batch_size = params["batch_size"]
             self.n_epochs = params["n_epochs"]
             self.init_lr = params["init_lr"]
@@ -49,7 +45,7 @@ class NNState:
             lr_step_size = params["lr_scheduler"]["step_size"]
             lr_gamma = params["lr_scheduler"]["gamma"]
             decay = params["weight_decay"]
-            print(f"Successfully loaded params")
+            print(f"Successfully loaded custom params")
 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.net = BaselineNet(cfg["num_classes"]).to(self.device)

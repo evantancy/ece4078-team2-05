@@ -1,12 +1,9 @@
-# import os
 import csv
 import subprocess
 import yaml
 from typing import Dict
 from pathlib import Path
 import numpy as np
-
-#TODO Use pandas
 
 def load_yaml(cfg_file_path: str) -> Dict:
     """Load yaml file
