@@ -18,8 +18,8 @@ from nn_config import NNState
 
 
 class Train:
-    def __init__(self):
-        self.net_dict = NNState('train')
+    def __init__(self, params_dict=None):
+        self.net_dict = NNState('train', params=params_dict)
         # Data Augmentation operations
         img_transforms = transforms.Compose(
             [transforms.RandomRotation((-30, 30)),
@@ -85,7 +85,7 @@ class Train:
         self.net_dict.net = self.net_dict.net.eval()
         eval_loader = DataLoader(dataset=self.eval_data,
                                  batch_size=self.net_dict.batch_size,
-                                 shuffle=False, num_workers=0,
+                                 shuffle=False, num_workers=self.net_dict.num_workers,
                                  drop_last=False)
         n_batch = len(eval_loader)
         with torch.no_grad():
@@ -115,8 +115,3 @@ class Train:
             print('*********************************')
         return eval_loss
 
-
-if __name__ == '__main__':
-    torch.manual_seed(1)
-    exp = Train()
-    exp.train()

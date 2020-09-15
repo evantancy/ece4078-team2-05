@@ -27,6 +27,8 @@ def parse_label_file(img_folder, dest_root, label):
     #if label == 'coke/':
     #    sel = 5
     #else:
+    # Reduce number of images saved
+    # sel == step count
     sel = 1
     for i in range(0,row_count,sel):
         img_label = df[0][i]

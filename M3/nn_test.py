@@ -13,33 +13,46 @@ import matplotlib.patches as label_box
 
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
-
+from utils import load_yaml
 from nn_config import NNState
 
 
 class Test:
-    def __init__(self):
-        self.net_dict = NNState(mode='eval')
+    def __init__(self, params_dict=None):
+        self.net_dict = NNState(mode="eval", params=params_dict)
         # Data Augmentation operations
         img_transforms = transforms.Compose(
-            [transforms.RandomRotation((-30, 30)),
-             transforms.RandomResizedCrop((64, 64), scale=(0.7, 1.0)),
-             transforms.ColorJitter(brightness=0.4, contrast=0.3,
-                                    saturation=0.3, hue=0.3),
-             transforms.ToTensor(),
-             transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                  std=[0.229, 0.224, 0.225])])
-        self.eval_data = datasets.ImageFolder('./dataset_segmented/All/',
-                                              transform=img_transforms)
-
+            [
+                transforms.Resize(64),
+                transforms.CenterCrop(64),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
+        # ORIGINAL CODE
+        # [transforms.RandomRotation((-30, 30)),
+        #  transforms.RandomResizedCrop((64, 64), scale=(0.7, 1.0)),
+        #  transforms.ColorJitter(brightness=0.4, contrast=0.3,
+        #                         saturation=0.3, hue=0.3),
+        #  transforms.ToTensor(),
+        #  transforms.Normalize(mean=[0.485, 0.456, 0.406],
+        #                       std=[0.229, 0.224, 0.225])])
+        self.eval_data = datasets.ImageFolder(
+            "./dataset_segmented/test/", transform=img_transforms
+        )
 
     def eval(self):
-        print('Evaluating...')
+        print("Evaluating...")
         self.net_dict.net = self.net_dict.net.eval()
-        eval_loader = DataLoader(dataset=self.eval_data,
-                                 batch_size=self.net_dict.batch_size,
-                                 shuffle=False, num_workers=0,
-                                 drop_last=False)
+        eval_loader = DataLoader(
+            dataset=self.eval_data,
+            batch_size=self.net_dict.batch_size,
+            shuffle=False,
+            num_workers=0,
+            drop_last=False,
+        )
         n_batch = len(eval_loader)
         with torch.no_grad():
             eval_loss_stack = self.net_dict.to_device(torch.Tensor())
@@ -55,21 +68,15 @@ class Test:
                 _, predicted = torch.max(labels_hat.data, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
+                # print(f"predicted:{predicted}, labels: {labels}")
                 loss_batch = self.net_dict.criterion(labels_hat, labels)
                 eval_loss_stack = torch.cat(
-                    (eval_loss_stack, loss_batch.unsqueeze(0)), 0)
-                print('Batch [%d/%d], Eval Loss: %.4f'
-                      % (i + 1, n_batch, loss_batch))
+                    (eval_loss_stack, loss_batch.unsqueeze(0)), 0
+                )
+                print("Batch [%d/%d], Eval Loss: %.4f" % (i + 1, n_batch, loss_batch))
             eval_loss = torch.mean(eval_loss_stack)
-            print('*********************************')
-            print('=> Mean Evaluation Loss: %.3f' % eval_loss)
-            print('=> Accuracy of the network: %d %%' % (
-                    100 * correct / total))
-            print('*********************************')
-        return eval_loss
-
-
-
-if __name__ == '__main__':
-    exp = Test()
-    exp.eval()
+            print("*********************************")
+            print("=> Mean Evaluation Loss: %.3f" % eval_loss)
+            print("=> Accuracy of the network: %d %%" % (100 * correct / total))
+            print("*********************************")
+        return eval_loss, 100*correct/total
