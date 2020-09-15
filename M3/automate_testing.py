@@ -42,14 +42,9 @@ if __name__ == "__main__":
                 },
                 "num_workers": 1,
             }
-
-            # Manually override n_epochs to make fair test
-            for j in range(n_dataset):
-                current_params["n_epochs"] = params["n_epochs"][j]
-                print(f"Using {params['n_epochs'][j]}--------")
-                test_caller = Test(current_params)
-                _, accuracy = test_caller.eval()
-                results.append([iteration_name, accuracy])
+            test_caller = Test(current_params)
+            _, accuracy = test_caller.eval()
+            results.append([iteration_name, accuracy])
 
         with open(results_file_name, "a") as results_file:
             current_time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
