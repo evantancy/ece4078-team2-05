@@ -77,6 +77,6 @@ class Test:
             eval_loss = torch.mean(eval_loss_stack)
             print("*********************************")
             print("=> Mean Evaluation Loss: %.3f" % eval_loss)
-            print("=> Accuracy of the network: %d %%" % (100 * correct / total))
+            print("=> Accuracy of the network: %.2f %%" % (100 * correct / total))
             print("*********************************")
         return eval_loss, 100*correct/total

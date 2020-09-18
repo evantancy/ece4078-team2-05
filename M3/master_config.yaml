@@ -1,3 +1,4 @@
+# Parameters specific to data collection
 collection:
   label_select: 0
   labels: ["sheep", "coke", "neither"]
@@ -13,14 +14,17 @@ collection:
   y_max: 4
   n_steps: 15
   max_images:
+  # Set this to True AFTER...
+  # Checking all coordinates of the PenguinPi are within arena
   taking_images: True
 
 # These parameters are used when not passing a custom parameter dictionary in automated_testing.py
+# However, exp_name is still used in nn_detect.py
 training:
-  exp_name: 'trained_1'
+  exp_name: 'vgg_1_3'
   init_lr: 5.0e-3
-  batch_size: 128
-  n_epochs: 15
+  batch_size: 256
+  n_epochs: 25
   weight_decay: 1.0e-5
   num_classes: 3
   load_best: 1
@@ -29,5 +33,5 @@ training:
       step_size: 1
       gamma: 0.9
 
-# Testing, training
-mode: "testing"
+# Testing, training, master
+mode: "master"

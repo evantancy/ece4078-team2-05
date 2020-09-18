@@ -9,6 +9,8 @@ import csv
 
 if __name__ == "__main__":
     mode = load_yaml("master_config.yaml")["mode"]
+
+    # Parameters for automated training of our model
     afk_params_dict = {
         "n_dataset": 5,
         "exp_name": "vgg_1",
@@ -20,16 +22,22 @@ if __name__ == "__main__":
                          "gamma": [0.9, 0.9, 0.9, 0.9, 0.9]},
         "num_workers": 1,
     }
+
+    # Aliasing because lazy
     params = afk_params_dict
     n_dataset = params["n_dataset"]
+
+    # Output our testing results
     results_file_name = "results.csv"
 
     if mode == "testing":
         results = []
+
         # Loop through all different parameters
         for i in range(n_dataset):
             iteration_name = params["exp_name"] + "_" + str(i)
             print(f"\n\n{iteration_name}")
+            # Get current iteration parameters
             current_params = {
                 "exp_name": iteration_name,
                 "init_lr": params["init_lr"][i],
@@ -42,6 +50,7 @@ if __name__ == "__main__":
                 },
                 "num_workers": 1,
             }
+
             test_caller = Test(current_params)
             _, accuracy = test_caller.eval()
             results.append([iteration_name, accuracy])
@@ -58,7 +67,6 @@ if __name__ == "__main__":
 
     elif mode == "training":
         check = input("Shutdown after training?[y/n]\n")
-        n_dataset = params["n_dataset"]
 
         with open(results_file_name, "a") as results_file:
             csv.writer(results_file).writerow(["Training started"])
@@ -81,7 +89,9 @@ if __name__ == "__main__":
                 },
                 "num_workers": 1,
             }
+
             torch.manual_seed(1)
+
             train_caller = Train(current_params)
             train_caller.train()
 
@@ -94,3 +104,7 @@ if __name__ == "__main__":
 
         if check.lower() == "y":
             subprocess.call("shutdown")
+
+    elif mode == "master":
+        test_caller = Test()
+        _, accuracy = test_caller.eval()

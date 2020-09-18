@@ -1,13 +1,9 @@
-# the neural network structure
-# AlexNet is used here
-# you may switch to other neural network models provided by torchvision.models
-
 import torch
 import torch.nn as nn
 import torchvision.models as models
 import numpy as np
 
-
+# VGG 16 is used here
 class BaselineNet(nn.Module):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     def __init__(self, num_classes=3):
