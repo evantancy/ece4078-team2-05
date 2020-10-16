@@ -1,8 +1,9 @@
 # How to run our robot
 
 - Make sure to update penguinpi.sdf in catkin_ws/src/penguinpi_description/urdf/penguinpi.sdf with our sdf file (some changes to the friction value)
-- Also attached are multiple folders and scripts contain slam functions used for M2, which were used for a pose estimations.
-- After setting up the environment, open a new terminal and run python3 autonav_starter.py
+- Also attached are multiple folders and scripts contain slam functions used for M2, which were used for a pose estimations. These include Robot.py and Measurements.py.
+- Our camera calibration values can be found in the folder camera_calibration, and our wheel parameters can be found in calibration/wheel_calibration. These are both referenced in the script from their respective folders, so no changes are necessary .
+- After setting up the environment, open a new terminal and run python3 autonav_starter.py to generate the map!
 
 Mapping algorithm:
 - The robot first scans 360 degrees, detecting all markers in its FOV
