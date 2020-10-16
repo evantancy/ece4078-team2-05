@@ -28,7 +28,7 @@ import slam.Measurements as Measurements
 marker_list = []
 saved_map = []
 map_f = 'map.txt'
-# there are 6 markers in total in the arena
+# there are 8 markers in total in the arena
 total_marker_num = 8
 
 # drive settings, feel free to change them
@@ -45,6 +45,7 @@ marker_length = 0.1
 wheels_scale = np.loadtxt('calibration/wheel_calibration/scale.txt', delimiter=',')
 wheels_width = np.loadtxt('calibration/wheel_calibration/baseline.txt', delimiter=',')
 
+# Slam code functions
 class Operate:
     def __init__(self):
         self.pibot = Robot.Robot(wheels_width,wheels_scale*0.5, camera_matrix, dist_coeffs) # manually adjusted baseline value to be more accurate
@@ -58,6 +59,7 @@ class Operate:
 # display window for visulisation
 cv2.namedWindow('video', cv2.WINDOW_NORMAL);
 cv2.setWindowProperty('video', cv2.WND_PROP_AUTOSIZE, cv2.WINDOW_AUTOSIZE);
+
 # font display options
 font = cv2.FONT_HERSHEY_SIMPLEX
 location = (0, 0)
@@ -71,28 +73,27 @@ current_marker = 'start'
 
 # 15 minutes time-out to prevent being stuck during auto nav
 timeout = time.time() + 60*15  
-
 start_t = time.time()
 
 # start flag
 start = True
-centre = 320#centre of pixels
-thresh =25
-# Drive straight function
+centre = 320#centre of pixels with respect to the camera
+
+# Driving class
 class Driving:
     def __init__():
         ppi.set_velocity(0,0)
 
-    def centre (marker_id):
+    def centre (marker_id): #function to centre robot pose towrds target marker
         lv = -wheel_vel
         rv = wheel_vel
         ppi.set_velocity(lv,rv)
-        operate.dt1 = time.time()
-        centre_calc=0
+        operate.dt1 = time.time()# used to estimate dt to produce accurate measurements of robot pose
+        centre_calc=0 #init calculation of aruco marker postion in camera frame
+
         while centre_calc<centre:
-            operate.control(lv,rv)
-            #print(operate.pibot.state)
-            #print(centre_calc)
+            operate.control(lv,rv)# continue turning until target marker is in the centre of the frame
+
             # get current frame
             curr = ppi.get_image()
 
@@ -123,21 +124,19 @@ class Driving:
             else:
                 for i in range(len(ids)):
                     idi = ids[i,0]
-                    # Some markers appear multiple times but should only be handled once.
-                    if idi == marker_id: 
+                    if idi == marker_id: #calculate position of marker in camera frame
                         centre_calc = corners[i][0][0][0]+(corners[i][0][1][0]-corners[i][0][0][0])/2
         ppi.set_velocity(0,0)
 
-    def recentre (marker_id):
+    def recentre (marker_id): #slowly turn in opposite direction after centering in case of significant overshoot, ensuring marker is in centre of camera frame
         lv = 14
         rv = -14
         ppi.set_velocity(lv,rv)
-        operate.dt1 = time.time()
-        centre_calc=600
+        operate.dt1 = time.time() # used to estimate dt to produce accurate measurements of robot pose
+        centre_calc=600 #init calculation of aruco marker postion in camera frame
         while centre_calc>centre:
             operate.control(lv,rv)
-            #print(operate.pibot.state)
-            #print(centre_calc)
+
             # get current frame
             curr = ppi.get_image()
 
@@ -168,12 +167,11 @@ class Driving:
             else:
                 for i in range(len(ids)):
                     idi = ids[i,0]
-                    # Some markers appear multiple times but should only be handled once.
                     if idi == marker_id: 
                         centre_calc = corners[i][0][0][0]+(corners[i][0][1][0]-corners[i][0][0][0])/2
         ppi.set_velocity(0,0)
 
-    def straight (marker_id):
+    def straight (marker_id): # driving straight towards target marker after centering towards it
         centre_calc = centre
         reached_marker = False
         marker_flag = 0
@@ -184,7 +182,7 @@ class Driving:
         dist = 10
         while not reached_marker:
             operate.control(60,60)
-            #print(operate.pibot.state)
+
             # get current frame
             curr = ppi.get_image()
 
@@ -210,31 +208,43 @@ class Driving:
             # visualisation
             cv2.imshow('video', resized)
             cv2.waitKey(1)
+
             dist = min(dist,np.sqrt((measurements[ind_id][2]-operate.pibot.state[0]) ** 2 + (measurements[ind_id][3]-operate.pibot.state[1]) ** 2))
-            print('Distance = ',dist)
+
             if ids is None:
-                marker_flag = marker_flag+1
+                marker_flag = marker_flag+1 # check to see if we can no longer detect our traget marker
             else:
                 for i in range(len(ids)):
                     idi = ids[i,0]
                     if idi == marker_id: 
                         centre_calc = corners[i][0][0][0]+(corners[i][0][1][0]-corners[i][0][0][0])/2
                 marker_flag = 0
-            if marker_flag >2 and dist <1:##at some point change this to a set distance! 
+
+            if marker_flag >2 and dist <1:# if we can no longer see our target marker, and our distance away from the marker is less than 1, then we have reached the marker!
                 reached_marker = True
+
+            #Proportional controller based on marker position with respect to camera frame
             if centre_calc >centre:
                 lv = min(lv+1,65)
                 ppi.set_velocity(lv,rv)
             if centre_calc <centre:
                 lv = max(lv-1,62)
                 ppi.set_velocity(lv,rv)
+
         ppi.set_velocity(0,0)
 
+
+
+
+
+
+#### Initialisations ####
 prev_markers = np.zeros(4)
 operate = Operate()
 ind_id = 0
 fin_detection = False
 all_seen_ids = np.array([0])
+
 # repeat until all markers are found or until time out
 while not fin_detection:
 
@@ -247,9 +257,11 @@ while not fin_detection:
     ppi.set_velocity(lv,rv)
     operate.dt1 = time.time()
     spin_time = time.time()
+
+    print("Scanning ...")
     while start and (not fin_spin):
         operate.control(lv,rv)
-        #print(operate.pibot.state)
+
         # get current frame
         curr = ppi.get_image()
 
@@ -287,15 +299,12 @@ while not fin_detection:
                     if idi == seen_ids[0]:
                         if time.time()-dead_time>5:
                             fin_spin = True
-                            #start = False
                             ppi.set_velocity(0,0)
                         dead_time = time.time()
                     continue
                 else:
                     seen_ids.append(idi)
-                # get pose estimation
-                # ------------------------------------------------------------------------------------
-                # TODO: this is a basic implementation of pose estimation, change it to improve your auto nav
+                #Pose estimation
                 lm_tvecs = tvecs[ids==idi].T
                 lm_bff2d = np.block([[lm_tvecs[2,:]],[-lm_tvecs[0,:]]])
                 lm_bff2d = np.mean(lm_bff2d, axis=1).reshape(-1,1)
@@ -303,22 +312,24 @@ while not fin_detection:
                 robot_xy = operate.pibot.state[0:2,:]
                 R_theta = np.block([[np.cos(th), -np.sin(th)],[np.sin(th), np.cos(th)]])
                 lm_inertial = robot_xy + R_theta @ lm_bff2d
+
                 # compute Euclidean distance between the robot and the marker
-                #dist = np.sqrt((lm_inertial[0][0]-operate.pibot.state[0]) ** 2 + (lm_inertial[1][0]-operate.pibot.state[1]) ** 2)
                 dist = np.sqrt((lm_inertial[0][0]-robot_pose[0]) ** 2 + (lm_inertial[1][0]-robot_pose[1]) ** 2)
+
                 # save marker measurements and distance
-                #lm_measurement = [idi, dist, lm_bff2d[0][0], lm_bff2d[1][0]]
                 lm_measurement = [idi, dist, lm_inertial[0][0], lm_inertial[1][0]]
-                print(lm_measurement)
+
+                print("Detected marker",np.around(lm_measurement[0],2),": distance =",np.around(lm_measurement[1],2),", postion =",np.around(lm_measurement[2],2),",",np.around(lm_measurement[3],2))
                 measurements.append(lm_measurement)
-                # ------------------------------------------------------------------------------------
+
                 if idi == seen_ids[0]:
                     dead_time = time.time()
+
         if time.time()-spin_time>60:
             fin_spin = True
-    # ------------------------------------------------------------------------------------
-    # expand the map by going to the nearest marker
-    # TODO: notice that the robot can get stuck always trying to reach the nearest marker, improve the search strategy to improve auto nav
+    
+
+    #EXPAND MAP
     measurements = sorted(measurements, key=lambda x: x[1]) # sort seen markers by distance (closest first)
     ppi.set_velocity(0, 0)
     if len(measurements) > 0:
@@ -336,9 +347,13 @@ while not fin_detection:
                     continue
             else:
                 continue
-        if len(marker_list) > total_marker_num-1:
+
+        if len(marker_list) > total_marker_num-1: #check if we have detected all markers, and break from while loop if true
             fin_detection = True
             break
+
+        #Algorithm for deciding which marker to prioritise 
+
         current_marker = measurements[0][0]
         ind_id = 0
         if len(measurements)==1:
@@ -351,27 +366,20 @@ while not fin_detection:
                 ind_id = 1
             else:
                 for mark in range(len(measurements)):
-                    print(np.any(prev_markers == measurements[mark][0]))
                     if np.any(prev_markers == measurements[mark][0]):
-                        print('yep')
                         continue
                     else:
                         current_marker = measurements[mark][0]
                         ind_id = mark
-                        print('nup')
                         break
         
         if len(measurements)>2:
             potential_marks = np.array([0])
             for mark in range(len(measurements)):
-                print(np.any(prev_markers == measurements[mark][0]))
                 if np.any(prev_markers == measurements[mark][0]):
-                    print('pass')
                     continue
                 else:
-                    print('consider')
                     potential_marks = np.append(potential_marks,mark)
-                    print(potential_marks)
                     if not np.any(all_seen_ids == measurements[mark][0]):
                         potential_marks = np.array([mark])
                         break
@@ -392,11 +400,8 @@ while not fin_detection:
         robot_pose = [measurements[ind_id][2],measurements[ind_id][3]]#[operate.pibot.state[0],operate.pibot.state[1]]
         prev_markers=np.append(prev_markers,current_marker)
         all_seen_ids = np.append(all_seen_ids,seen_ids)
-        print("seen_ids = ",seen_ids)
-        print("all_seen_ids = ",all_seen_ids)
         print('current map [current marker id, accessible marker id, distance]:\n',saved_map)
         print('current marker list [id, x, y]:\n',marker_list)
-        print('Previous_markers: ',prev_markers)
 
     else:
         print('no markers in sight!')
