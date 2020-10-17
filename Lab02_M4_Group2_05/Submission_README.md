@@ -11,7 +11,7 @@ Mapping algorithm:
 - The above two steps are repeated until all markers in the arena have been detected, and then the map is genereted with a sufficient amount of paths found.
 
 Results:
-- As seen in the map.txt file generated, ou results are very accurate, simply using some slam functions for pose estimation. Please note that the EKF was left out for this milestone.
+- As seen in the best_map.txt file generated, ou results are very accurate, simply using some slam functions for pose estimation. Please note that the EKF was left out for this milestone.
 - Including the starting point, 19 paths were found, of which 2 are technically invalid, but due to our robot only being able to get so close to the aruco markers without crashing, there was no way around detecting these paths (paths 12,21 and 8,1).
 - On the rare ocassion when at marker 3, marker 1 has been incorrectly identified as 37 or 42, so just keep this in mind if it is detected.
 - Overall the time taken is approximatley 9.4 minutes, however as seen in the video, a conservative estimate for our FPS is around 10, thus our scaling factor for our time should be around 10/30 which would result in a final run time of approx 3.13 mins.
