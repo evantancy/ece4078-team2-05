@@ -7,11 +7,10 @@ import matplotlib.pyplot as plt
 import os, sys
 import json
 import time
-
 # Import keyboard teleoperation components
 import PenguinPiC
 import keyboardControlARtestStarter as Keyboard
-
+from YOLO import YOLO
 # Import SLAM components
 sys.path.insert(0, "{}/slam".format(os.getcwd()))
 import slam.Slam as Slam
@@ -99,6 +98,8 @@ class Operate:
             # Run SLAM
             self.control()
             self.vision()
+            yolo.run_inference(self.img)
+            yolo.draw_boxes(self.img)
 
             # Save SLAM map
             self.write_map(self.slam)
@@ -113,7 +114,7 @@ if __name__ == "__main__":
     datadir = "{}/calibration/".format(currentDir)
     # connect to the robot
     ppi = PenguinPiC.PenguinPi()
-
+    yolo = YOLO()
     # Perform Manual SLAM
     operate = Operate(datadir, ppi)
     operate.process()
