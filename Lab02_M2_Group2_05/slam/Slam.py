@@ -78,7 +78,7 @@ class Slam:
 
         y = z - z_hat
         x = x_hat + K @ y
-        self.set_state_vector(x)
+        self.set_state_vector(x)### change back to x to use ekf
         self.P = (np.eye(x.shape[0]) - K @ C) @ self.P
         # ------------------------------------------
 

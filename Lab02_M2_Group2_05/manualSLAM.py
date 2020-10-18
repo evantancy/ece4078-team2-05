@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os, sys
 import json
+import time
 
 # Import keyboard teleoperation components
 import PenguinPiC
@@ -34,7 +35,7 @@ class Operate:
         camera_matrix, dist_coeffs, scale, baseline = self.getCalibParams(datadir)
 
         # SLAM components
-        self.pibot = Robot.Robot(baseline*1.2, scale, camera_matrix, dist_coeffs) # manually adjusted baseline value to be more accurate
+        self.pibot = Robot.Robot(baseline, scale*0.5, camera_matrix, dist_coeffs) # manually adjusted baseline value to be more accurate
         self.aruco_det = aruco.aruco_detector(self.pibot, marker_length=0.1)
         self.slam = Slam.Slam(self.pibot)
 
@@ -57,7 +58,9 @@ class Operate:
     def control(self):
         # Import teleoperation control signals
         [lv, rv, _] = self.keyboard.latest_drive_signal()
-        drive_meas = Measurements.DriveMeasurement(lv, rv, dt=0.3)
+        self.dt2 = time.time()
+        drive_meas = Measurements.DriveMeasurement(lv, rv, self.dt2-self.dt1)
+        self.dt1 = time.time()
         self.slam.predict(drive_meas)
 
     def vision(self):
@@ -91,6 +94,7 @@ class Operate:
         img_artist = ax[1].imshow(self.img)
 
         # Main loop
+        self.dt1 = time.time()
         while True:
             # Run SLAM
             self.control()
