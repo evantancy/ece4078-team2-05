@@ -145,9 +145,11 @@ class Slam:
             lmi_cov_ellipse = self.make_ellipse(lmi, Plmi)
             ax.plot(lmi_cov_ellipse[0,:], lmi_cov_ellipse[1,:], 'b-')
         
-        ax.axis('equal')
-        ax.set_xlim(-5+self.robot.state[0],5+self.robot.state[0])
-        ax.set_ylim(-5+self.robot.state[1],5+self.robot.state[1])
+        #ax.axis('equal')
+        #ax.set_xlim(-5+self.robot.state[0],5+self.robot.state[0])
+        #ax.set_ylim(-5+self.robot.state[1],5+self.robot.state[1])
+        ax.set_xlim(-7,7)
+        ax.set_ylim(-3,11)
     
     @staticmethod
     def make_ellipse(x, P):
