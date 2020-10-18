@@ -16,7 +16,7 @@ class PenguinPi:
             r = requests.get("http://"+self.ip+":"+str(self.port)+"/robot/set/velocity?value="+str(lvel)+","+str(rvel)
                             +"&time="+str(time))
         return lvel, rvel
-    
+
     def get_image(self):
         try:
             r = requests.get(f"http://{self.ip}:{self.port}/camera/get")
@@ -25,4 +25,4 @@ class PenguinPi:
             print("Image retrieval timed out.")
             img = np.zeros((240,320,3), dtype=np.uint8)
         return img
-        
+
