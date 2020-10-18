@@ -16,7 +16,8 @@ if __name__ == "__main__":
     # load YOLOv4 network
     net = cv2.dnn.readNet(weights_path, cfg_path)
     net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    # net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
