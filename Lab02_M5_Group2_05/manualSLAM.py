@@ -20,8 +20,9 @@ import slam.Measurements as Measurements
 
 # Manual SLAM
 class Operate:
-    def __init__(self, datadir, ppi):
+    def __init__(self, datadir, ppi, yolo_obj):
         # Initialise
+        self.yolo = yolo_obj
         self.ppi = ppi
         self.ppi.set_velocity(0, 0)
         self.img = np.zeros([240, 320, 3], dtype=np.uint8)
@@ -98,8 +99,8 @@ class Operate:
             # Run SLAM
             self.control()
             self.vision()
-            yolo.run_inference(self.img)
-            yolo.draw_boxes(self.img)
+            self.yolo.run_inference(self.img)
+            self.yolo.draw_boxes(self.img)
 
             # Save SLAM map
             self.write_map(self.slam)
@@ -116,5 +117,5 @@ if __name__ == "__main__":
     ppi = PenguinPiC.PenguinPi()
     yolo = YOLO()
     # Perform Manual SLAM
-    operate = Operate(datadir, ppi)
+    operate = Operate(datadir, ppi, yolo)
     operate.process()
