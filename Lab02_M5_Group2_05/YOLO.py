@@ -2,9 +2,24 @@ import cv2
 import numpy as np
 import time
 import sys
+from typing import List
 
 
 class YOLO:
+    CONFIDENCE_THRESHOLD = 0.4
+    SCORE_THRESHOLD = 0.2
+    NMS_THRESHOLD = 0.4
+    # hot pink baby, white, green, red
+    # BGR! not RGB
+    COLORS = [(255, 51, 255), (255, 255, 255), (0, 255, 0), (0, 0, 255)]
+    SIZE = {"small": (320, 320), "medium": (416, 416), "large": (608, 608)}
+    FONT = cv2.FONT_HERSHEY_SIMPLEX
+    FONT_SIZE = 0.5
+    # thiccness needs to be an integer!!
+    FONT_THICCNESS = 2
+    # number of pixels
+    TEXT_OFFSET = 18
+
     def __init__(
         self,
         weights_path: str = "yolo_cfg/custom-yolov4-tiny-detector_final.weights",
@@ -13,104 +28,133 @@ class YOLO:
     ) -> None:
         """
         Args:
-            weights_path (str, optional): Defaults to "yolo_cfg/custom-yolov4-detector_final.weights".
-            cfg_path (str, optional): Defaults to "yolo_cfg/custom-yolov4-detector.cfg".
+            weights_path (str, optional): Defaults to "yolo_cfg/custom-yolov4-tiny-detector_final.weights".
+            cfg_path (str, optional): Defaults to "yolo_cfg/custom-yolov4-tiny-detector.cfg".
             classes_path (str, optional): Defaults to "yolo_cfg/obj.names".
-        """
-        # Load YOLO neural network
-        self._net = cv2.dnn.readNet(weights_path, cfg_path)
-        self._net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        self._net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
+        """
         # load labels/classes from obj.names file
         self._classes = []
         with open(classes_path, "r") as f:
             self._classes = [line.strip() for line in f.readlines()]
 
-        self.__CONFIDENCE_THRESHOLD = 0.2
-        self.__SCORE_THRESHOLD = 0.2
-        self.__IOU_THRESHOLD = 0.2
+        # load YOLO neural network
+        net = cv2.dnn.readNet(weights_path, cfg_path)
+        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        # net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+        self._model = cv2.dnn_DetectionModel(net)
+        self._model.setInputParams(size=self.SIZE["medium"], scale=1 / 255)
 
-        self.colors = np.random.uniform(0, 255, size=(len(self._classes), 3))
-        self.frame_id = 0
-        self.starting_time = time.time()
+        self.__inference_time = 0
+        self.__draw_time = 0
 
-    def run_inference(self, img=None) -> None:
+    def run_inference(self, cv2_frame) -> None:
+        # detecting objects
+        start_inf = time.time()
+
+        self._img = cv2_frame
+        self.classes_detected, self.confidences, self.boxes = self._model.detect(
+            self._img, self.CONFIDENCE_THRESHOLD, self.NMS_THRESHOLD
+        )
+
+        self.__inference_time = (time.time() - start_inf) * 1000
+
+    def process(self, robot_pose=np.zeros(3)) -> None:
+        start_draw = time.time()
+
+        # START DRAWING BOXES
+        for (class_id, confidence, box) in zip(
+            self.classes_detected, self.confidences, self.boxes
+        ):
+            # mod operator to loop through all possible colors we specify if we have lots of classes
+            color = self.COLORS[int(class_id) % len(self.COLORS)]
+            # class_id is an np.array of 1 element
+            label_name = self._classes[class_id[0]]
+            label = "%s : %.3f" % (label_name, confidence)
+            cv2.rectangle(self._img, box, color, self.FONT_THICCNESS)
+
+            # box has the format (x,y,width,height)
+            x, y, width, height = box
+            # -1 to draw ABOVE the box
+            self.write_text(label, x, y, color, 14, position=-1)
+
+            # END OF DRAWING BOXES
+            # START PROCESS DISTANCES
+
+            if label_name == "sheep":
+                # 122 = 61 height @ 2m
+                # 146.5 = 293 height @ 0.5m
+                dist = 134.25 / height
+            elif label_name == "coke":
+                # 92 = 92 height @ 1m
+                dist = 92 / height
+
+            obj_x = dist * np.cos(robot_pose[2]) + robot_pose[0]
+            obj_y = dist * np.sin(robot_pose[2]) + robot_pose[1]
+            x_label = "Xw:" + str(np.around(obj_x, 2))
+            y_label = "Yw:" + str(np.around(obj_y, 2))
+            dist_label = "D(m): %.2f" % (dist)
+            self.write_text(x_label, x, y + height, color, 14, position=1)
+            self.write_text(y_label, x, y + height, color, 14, position=2)
+            self.write_text(dist_label, x, y, color, 14, position=-2)
+        # END PROCESS DISTANCES
+
+        inf_label = "INF(ms): %6.3fms" % (self.__inference_time)
+        self.write_text(inf_label, 0, 25, self.COLORS[0], position=1)
+
+        self.__draw_time = (time.time() - start_draw) * 1000
+
+        draw_label = "DRW(ms): %6.3fms" % (self.__draw_time)
+        self.write_text(draw_label, 0, 25, self.COLORS[0], position=2)
+
+        fps_label = "FPS: %6.2fHz" % (
+            1 * 1000 / (self.__draw_time + self.__inference_time)
+        )
+        self.write_text(fps_label, 0, 25, self.COLORS[0], position=3)
+
+        cv2.imshow("YOLO", self._img)
+        key = cv2.waitKey(1)
+        if key == 27 or key == ord("q"):
+            # del self
+            cv2.destroyAllWindows()
+            self._img.release()
+
+    def write_text(
+        self,
+        label: str = "",
+        x: int = 0,
+        y: int = 0,
+        color: tuple = (255, 255, 255),
+        offset: int = None,
+        position: int = 1,
+    ) -> None:
         """
         Args:
-            img (cv2 frame, optional): Defaults to None.
+            label (str, optional): Text to write on frame. Defaults to "".
+            x (int, optional): Location in x (horizontal). Defaults to 0.
+            y (int, optional): Location in y (vertical). Defaults to 0.
+            color (tuple, optional): Defaults to (255, 255, 255).
+            offset (int, optional): Defaults to None.
+            position (int, optional): Offset multiplier. Think of it as a positional argument for text on the OpenCV window. Defaults to 1. Setting it to -1 writes the text above bounding boxes.
         """
-        self.frame_id += 1
-        height, width, channels = img.shape
-        # detecting objects
-        blob = cv2.dnn.blobFromImage(
-            img, 1 / 255.0, (416, 416), (0, 0, 0), True, crop=False
-        )
-        # use blob as input to neural network
-        self._net.setInput(blob)
-        # output layers
-        ln = self._net.getLayerNames()
-        output_layers = [ln[i[0] - 1] for i in self._net.getUnconnectedOutLayers()]
-        output_layers = self._net.forward(output_layers)
-
-        # showing informations on the screen
-        self.class_ids = []
-        self.confidences = []
-        self.boxes = []
-
-        for output in output_layers:
-            for detection in output:
-                scores = detection[5:]
-                class_id = np.argmax(scores)
-                confidence = scores[class_id]
-                if confidence > self.__CONFIDENCE_THRESHOLD:
-                    # extract bounding box features
-                    center_x = int(detection[0] * width)
-                    center_y = int(detection[1] * height)
-
-                    # box width and height
-                    w = int(detection[2] * width)
-                    h = int(detection[3] * height)
-
-                    # top left of bounding box
-                    x = int(center_x - w / 2)
-                    y = int(center_y - h / 2)
-                    self.boxes.append([x, y, int(w), int(h)])
-                    self.confidences.append(float(confidence))
-                    self.class_ids.append(class_id)
-
-        # non-max suppression to prevent overlapping boxes
-        self._indices = cv2.dnn.NMSBoxes(
-            self.boxes, self.confidences, self.__SCORE_THRESHOLD, self.__IOU_THRESHOLD
+        if offset is None:
+            offset = self.TEXT_OFFSET
+        cv2.putText(
+            self._img,
+            label,
+            (x, y + offset * position),
+            self.FONT,
+            self.FONT_SIZE,
+            color,
+            self.FONT_THICCNESS,
         )
 
-    def draw_boxes(self, img=None):
+    # TODO: Triangulation
+    def generate_3d_pos(self):
+        fov_horz = 1.0855
+        foz_vert = 0.8517
 
-        font = cv2.FONT_HERSHEY_PLAIN
-        for i in range(len(self.boxes)):
-            if i in self._indices:
-                x, y, w, h = self.boxes[i]
-                label = str(self._classes[self.class_ids[i]])
-                confidence = self.confidences[i]
-                color = self.colors[self.class_ids[i]]
-                cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
-                cv2.putText(
-                    img,
-                    label + " " + str(round(confidence, 2)),
-                    (x, y + 30),
-                    font,
-                    1,
-                    (255, 255, 255),
-                    2,
-                )
-        fps = self.frame_id / (time.time() - self.starting_time)
-        cv2.putText(img, "FPS:" + str(round(fps, 2)), (10, 50), font, 2, (0, 0, 0), 1)
-        # uncomment if you want to show new window!
-        cv2.imshow("YOLO IMAGE", img)
-        key = cv2.waitKey(1)
-        if key == 27 or key == "q":
-            del(self)
-
-    def __del__(self):
-        # Some weird funky stuff going on with manualSLAM.py
-        cv2.destroyWindow("YOLO IMAGE")
+    # def __del__(self):
+    #     # Some weird funky stuff going on with manualSLAM.py
+    #     cv2.destroyAllWindows("YOLO")

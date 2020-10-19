@@ -7,10 +7,12 @@ import matplotlib.pyplot as plt
 import os, sys
 import json
 import time
+
 # Import keyboard teleoperation components
-import PenguinPiC
+from PenguinPiC import PenguinPi
 import keyboardControlARtestStarter as Keyboard
 from YOLO import YOLO
+
 # Import SLAM components
 sys.path.insert(0, "{}/slam".format(os.getcwd()))
 import slam.Slam as Slam
@@ -35,23 +37,25 @@ class Operate:
         camera_matrix, dist_coeffs, scale, baseline = self.getCalibParams(datadir)
 
         # SLAM components
-        self.pibot = Robot.Robot(baseline, scale*0.5, camera_matrix, dist_coeffs) # manually adjusted baseline value to be more accurate
+        self.pibot = Robot.Robot(
+            baseline, scale * 0.5, camera_matrix, dist_coeffs
+        )  # manually adjusted baseline value to be more accurate
         self.aruco_det = aruco.aruco_detector(self.pibot, marker_length=0.1)
         self.slam = Slam.Slam(self.pibot)
 
-    #def __del__(self):
-        #self.ppi.set_velocity(0, 0)
+    # def __del__(self):
+    # self.ppi.set_velocity(0, 0)
 
     def getCalibParams(self, datadir):
         # Imports camera / wheel calibration parameters
         fileK = "{}camera_calibration/intrinsic.txt".format(datadir)
-        camera_matrix = np.loadtxt(fileK, delimiter=',')
+        camera_matrix = np.loadtxt(fileK, delimiter=",")
         fileD = "{}camera_calibration/distCoeffs.txt".format(datadir)
-        dist_coeffs = np.loadtxt(fileD, delimiter=',')
+        dist_coeffs = np.loadtxt(fileD, delimiter=",")
         fileS = "{}wheel_calibration/scale.txt".format(datadir)
-        scale = np.loadtxt(fileS, delimiter=',')
+        scale = np.loadtxt(fileS, delimiter=",")
         fileB = "{}wheel_calibration/baseline.txt".format(datadir)
-        baseline = np.loadtxt(fileB, delimiter=',')
+        baseline = np.loadtxt(fileB, delimiter=",")
 
         return camera_matrix, dist_coeffs, scale, baseline
 
@@ -59,7 +63,7 @@ class Operate:
         # Import teleoperation control signals
         [lv, rv, _] = self.keyboard.latest_drive_signal()
         self.dt2 = time.time()
-        drive_meas = Measurements.DriveMeasurement(lv, rv, self.dt2-self.dt1)
+        drive_meas = Measurements.DriveMeasurement(lv, rv, self.dt2 - self.dt1)
         self.dt1 = time.time()
         self.slam.predict(drive_meas)
 
@@ -82,10 +86,12 @@ class Operate:
 
     def write_map(self, slam):
         # Output SLAM map as a json file
-        map_dict = {"AR_tag_list":slam.taglist,
-                    "map":slam.markers.tolist(),
-                    "covariance":slam.P[3:,3:].tolist()}
-        with open("slam.txt", 'w') as map_f:
+        map_dict = {
+            "AR_tag_list": slam.taglist,
+            "map": slam.markers.tolist(),
+            "covariance": slam.P[3:, 3:].tolist(),
+        }
+        with open("slam.txt", "w") as map_f:
             json.dump(map_dict, map_f, indent=2)
 
     def process(self):
@@ -99,8 +105,10 @@ class Operate:
             # Run SLAM
             self.control()
             self.vision()
+            # pass image into yolo ONCE!!
             self.yolo.run_inference(self.img)
-            self.yolo.draw_boxes(self.img)
+            self.yolo.process(self.slam.get_state_vector())
+            #
 
             # Save SLAM map
             self.write_map(self.slam)
@@ -114,7 +122,7 @@ if __name__ == "__main__":
     currentDir = os.getcwd()
     datadir = "{}/calibration/".format(currentDir)
     # connect to the robot
-    ppi = PenguinPiC.PenguinPi()
+    ppi = PenguinPi()
     yolo = YOLO()
     # Perform Manual SLAM
     operate = Operate(datadir, ppi, yolo)
