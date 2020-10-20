@@ -122,7 +122,7 @@ if __name__ == "__main__":
     datadir = "{}/calibration/".format(currentDir)
     # connect to the robot
     ppi = PenguinPi()
-    yolo = YOLO(gpu=1)
+    yolo = YOLO()
     # Perform Manual SLAM
     operate = Operate(datadir, ppi, yolo)
     operate.process()

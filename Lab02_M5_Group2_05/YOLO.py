@@ -47,7 +47,7 @@ class YOLO:
             net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
             # net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
         else:
-            net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
+            net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
             net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
         self._model = cv2.dnn_DetectionModel(net)
