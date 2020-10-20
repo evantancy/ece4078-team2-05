@@ -108,7 +108,6 @@ class Operate:
             # pass image into yolo ONCE!!
             self.yolo.run_inference(self.img)
             self.yolo.process(self.slam.get_state_vector())
-            #
 
             # Save SLAM map
             self.write_map(self.slam)
@@ -123,7 +122,7 @@ if __name__ == "__main__":
     datadir = "{}/calibration/".format(currentDir)
     # connect to the robot
     ppi = PenguinPi()
-    yolo = YOLO()
+    yolo = YOLO(gpu=1)
     # Perform Manual SLAM
     operate = Operate(datadir, ppi, yolo)
     operate.process()

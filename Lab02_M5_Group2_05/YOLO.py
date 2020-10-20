@@ -22,12 +22,14 @@ class YOLO:
 
     def __init__(
         self,
+        gpu=0,
         weights_path: str = "yolo_cfg/custom-yolov4-tiny-detector_final.weights",
         cfg_path: str = "yolo_cfg/custom-yolov4-tiny-detector.cfg",
         classes_path: str = "yolo_cfg/obj.names",
     ) -> None:
         """
         Args:
+            gpu (int, optional): Defaults to 0.
             weights_path (str, optional): Defaults to "yolo_cfg/custom-yolov4-tiny-detector_final.weights".
             cfg_path (str, optional): Defaults to "yolo_cfg/custom-yolov4-tiny-detector.cfg".
             classes_path (str, optional): Defaults to "yolo_cfg/obj.names".
@@ -40,9 +42,14 @@ class YOLO:
 
         # load YOLO neural network
         net = cv2.dnn.readNet(weights_path, cfg_path)
-        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
-        # net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+        if (gpu):
+            net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+            net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+            # net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+        else:
+            net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
+            net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+
         self._model = cv2.dnn_DetectionModel(net)
         self._model.setInputParams(size=self.SIZE["medium"], scale=1 / 255)
 
