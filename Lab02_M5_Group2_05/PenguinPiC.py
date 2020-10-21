@@ -4,7 +4,7 @@ import cv2
 
 
 class PenguinPi:
-    def __init__(self, ip="localhost") -> None:
+    def __init__(self, ip="localhost"):
         """
         Args:
             ip (str, optional): IP address. Defaults to "localhost".
@@ -12,11 +12,11 @@ class PenguinPi:
         self.ip = ip
         self.port = 40000
 
-    def set_velocity(self, lvel: int, rvel: int, time: int = 0) -> None:
+    def set_velocity(self, lvel: int, rvel: int, time=0) -> None:
         """
         Args:
-            lvel (int): Left wheel speed
-            rvel (int): Right wheel speed
+            lvel (int): Target left wheel speed
+            rvel (int): Target right wheel speed
             time (int, optional): Defaults to 0.
         """
         if time == 0:
@@ -28,7 +28,7 @@ class PenguinPi:
             )
         else:
             assert time > 0, "Time must be positive."
-            assert time < 60, "Time must be less than network timeout (60s)."
+            assert time < 60, "Time must be less than network timeout (20s)."
             r = requests.get(
                 "http://"
                 + self.ip
@@ -42,7 +42,11 @@ class PenguinPi:
                 + str(time)
             )
 
-    def get_image(self) -> cv2.Frame or np.ndarray:
+    def get_image(self) -> np.ndarray:
+        """
+        Returns:
+            np.ndarray: OpenCV image object. Check using type(img)
+        """
         try:
             r = requests.get(f"http://{self.ip}:{self.port}/camera/get")
             img = cv2.imdecode(np.frombuffer(r.content, np.uint8), cv2.IMREAD_COLOR)
