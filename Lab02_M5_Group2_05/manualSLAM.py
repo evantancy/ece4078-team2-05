@@ -3,6 +3,7 @@
 
 # Import packages
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import os, sys
 import json
@@ -11,7 +12,8 @@ import time
 # Import keyboard teleoperation components
 from PenguinPiC import PenguinPi
 import keyboardControlARtestStarter as Keyboard
-#from YOLO import YOLO
+from YOLO import YOLO
+from CvTimer import CvTimer
 
 # Import SLAM components
 sys.path.insert(0, "{}/slam".format(os.getcwd()))
@@ -20,8 +22,12 @@ import slam.Robot as Robot
 import slam.aruco_detector as aruco
 import slam.Measurements as Measurements
 map_f = 'estimated_poses.csv'
+
+
+
 # Manual SLAM
 class Operate:
+    # TODO: Feed SLAM as constructor param
     def __init__(self, datadir, ppi, yolo_obj):
         # Initialise
         #self.yolo = yolo_obj
@@ -77,12 +83,13 @@ class Operate:
     def display(self, fig, ax):
         # Visualize SLAM
         ax[0].cla()
+        # ax.cla()
         self.slam.draw_slam_state(ax[0])
 
         ax[1].cla()
         ax[1].imshow(self.img[:, :, -1::-1])
 
-        plt.pause(0.01)
+        plt.pause(0.001)
 
     def write_map(self, slam):
         self.marker_list =[]
@@ -96,13 +103,17 @@ class Operate:
                     f.write('\n')
 
     def process(self):
+
         # Show SLAM and camera feed side by side
         fig, ax = plt.subplots(1, 2)
+        # fig, ax = plt.subplots()
         img_artist = ax[1].imshow(self.img)
 
         # Main loop
         self.dt1 = time.time()
         while True:
+            Timer.start('main')
+
             # Run SLAM
             self.control()
             self.vision()
@@ -114,10 +125,14 @@ class Operate:
             self.write_map(self.slam)
 
             # Output visualisation
-            self.display(fig, ax)
+            # self.display(fig, ax)
+
+            Timer.stop('main')
+            # Timer.print_summary()
 
 
 if __name__ == "__main__":
+    Timer = CvTimer()
     # Location of the calibration files
     currentDir = os.getcwd()
     datadir = "{}/calibration/".format(currentDir)
@@ -128,6 +143,3 @@ if __name__ == "__main__":
     # Perform Manual SLAM
     operate = Operate(datadir, ppi, yolo)
     operate.process()
-
-
-
