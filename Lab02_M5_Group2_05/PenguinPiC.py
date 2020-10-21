@@ -42,7 +42,7 @@ class PenguinPi:
                 + str(time)
             )
 
-    def get_image(self) -> cv2.Frame:
+    def get_image(self) -> cv2.Frame or np.ndarray:
         try:
             r = requests.get(f"http://{self.ip}:{self.port}/camera/get")
             img = cv2.imdecode(np.frombuffer(r.content, np.uint8), cv2.IMREAD_COLOR)
