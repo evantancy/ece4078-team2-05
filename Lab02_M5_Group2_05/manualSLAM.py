@@ -11,7 +11,7 @@ import time
 # Import keyboard teleoperation components
 from PenguinPiC import PenguinPi
 import keyboardControlARtestStarter as Keyboard
-from YOLO import YOLO
+#from YOLO import YOLO
 
 # Import SLAM components
 sys.path.insert(0, "{}/slam".format(os.getcwd()))
@@ -19,12 +19,12 @@ import slam.Slam as Slam
 import slam.Robot as Robot
 import slam.aruco_detector as aruco
 import slam.Measurements as Measurements
-
+map_f = 'estimated_poses.csv'
 # Manual SLAM
 class Operate:
     def __init__(self, datadir, ppi, yolo_obj):
         # Initialise
-        self.yolo = yolo_obj
+        #self.yolo = yolo_obj
         self.ppi = ppi
         self.ppi.set_velocity(0, 0)
         self.img = np.zeros([240, 320, 3], dtype=np.uint8)
@@ -85,14 +85,15 @@ class Operate:
         plt.pause(0.01)
 
     def write_map(self, slam):
-        # Output SLAM map as a json file
-        map_dict = {
-            "AR_tag_list": slam.taglist,
-            "map": slam.markers.tolist(),
-            "covariance": slam.P[3:, 3:].tolist(),
-        }
-        with open("slam.txt", "w") as map_f:
-            json.dump(map_dict, map_f, indent=2)
+        self.marker_list =[]
+        for i in range(len(slam.taglist)):
+            self.marker_list.append([slam.taglist[i], slam.markers[0][i], slam.markers[1][i]])
+        self.marker_list = sorted(self.marker_list, key=lambda x: x[0])
+        with open(map_f,'w') as f:
+            f.write('object, x, y\n')
+            for markers in self.marker_list:
+                    f.write('Marker'+str(markers[0])+', '+str(markers[1])+', '+str(markers[2]))
+                    f.write('\n')
 
     def process(self):
         # Show SLAM and camera feed side by side
@@ -106,8 +107,8 @@ class Operate:
             self.control()
             self.vision()
             # pass image into yolo ONCE!!
-            self.yolo.run_inference(self.img)
-            self.yolo.process(self.slam.get_state_vector())
+            #self.yolo.run_inference(self.img)
+            #self.yolo.process(self.slam.get_state_vector())
 
             # Save SLAM map
             self.write_map(self.slam)
@@ -122,7 +123,11 @@ if __name__ == "__main__":
     datadir = "{}/calibration/".format(currentDir)
     # connect to the robot
     ppi = PenguinPi()
-    yolo = YOLO(gpu=1)
+    #yolo = YOLO(gpu=1)
+    yolo = []
     # Perform Manual SLAM
     operate = Operate(datadir, ppi, yolo)
     operate.process()
+
+
+
