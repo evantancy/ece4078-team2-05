@@ -3,12 +3,14 @@ import numpy as np
 import time
 import sys
 from typing import List
+from CvTimer import CvTimer
+
+FUNKY = False
 
 
 class YOLO:
-    CONFIDENCE_THRESHOLD = 0.4
-    SCORE_THRESHOLD = 0.2
-    NMS_THRESHOLD = 0.4
+    CONFIDENCE_THRESHOLD = 0.2
+    NMS_THRESHOLD = 0.6
     # hot pink baby, white, green, red
     # BGR! not RGB
     COLORS = [(255, 51, 255), (255, 255, 255), (0, 255, 0), (0, 0, 255)]
@@ -40,34 +42,38 @@ class YOLO:
         with open(classes_path, "r") as f:
             self._classes = [line.strip() for line in f.readlines()]
 
+        # self.COLORS = np.random.uniform(0, 255, size=(len(self._classes), 3))
+
         # load YOLO neural network
         net = cv2.dnn.readNet(weights_path, cfg_path)
-        if (gpu):
+        if gpu:
             net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
             net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
             # net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
         else:
-            net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
+            net.setPreferableBackend(cv2.dnn.DNN_OPENCV)
             net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
         self._model = cv2.dnn_DetectionModel(net)
         self._model.setInputParams(size=self.SIZE["medium"], scale=1 / 255)
 
+        self.__TIMER = CvTimer()
         self.__inference_time = 0
         self.__draw_time = 0
+        self.seen_objects = dict()
 
     def run_inference(self, cv2_frame) -> None:
         # detecting objects
-        start_inf = time.time()
+        self.__TIMER.start("inference")
 
         self._img = cv2_frame
         self.classes_detected, self.confidences, self.boxes = self._model.detect(
             self._img, self.CONFIDENCE_THRESHOLD, self.NMS_THRESHOLD
         )
 
-        self.__inference_time = (time.time() - start_inf) * 1000
+        self.__TIMER.stop("inference")
 
-    def process(self, robot_pose=np.zeros(3)) -> None:
+    def process(self, robot_pose=np.zeros(3), seen_objects=[]) -> None:
         start_draw = time.time()
 
         # START DRAWING BOXES
@@ -97,8 +103,27 @@ class YOLO:
                 # 92 = 92 height @ 1m
                 dist = 92 / height
 
+            # World frame
             obj_x = dist * np.cos(robot_pose[2]) + robot_pose[0]
             obj_y = dist * np.sin(robot_pose[2]) + robot_pose[1]
+            save_pose = False
+            # check if box centre is within 25px of centre of frame
+            if abs((x + width / 2) - 640 / 2) < 50:
+                if dist < 4:
+                    save_pose = True
+                    if seen_objects is not None:
+                        for obj in seen_objects:
+                            obj_dist = np.sqrt(
+                                (obj[1] - obj_x) ** 2 + (obj[2] - obj_y) ** 2
+                            )
+                            if obj_dist < 1:
+                                save_pose = False
+            max_sheep = 0
+
+            if save_pose:
+                seen_objects.append([label_name, obj_x[0], obj_y[0]])
+                # print(seen_objects)
+
             x_label = "Xw:" + str(np.around(obj_x, 2))
             y_label = "Yw:" + str(np.around(obj_y, 2))
             dist_label = "D(m): %.2f" % (dist)
@@ -126,6 +151,117 @@ class YOLO:
             # del self
             cv2.destroyAllWindows()
             self._img.release()
+        return seen_objects
+
+    #     self.__TIMER.start("draw")
+    #     # self.__ROBOT_POSE = robot_pose
+
+    #     if FUNKY:
+    #         self.COLORS = np.random.uniform(0, 255, size=(len(self._classes), 3))
+
+    #     # START DRAWING BOXES
+    #     for (class_id, confidence, box) in zip(
+    #         self.classes_detected, self.confidences, self.boxes
+    #     ):
+    #         # mod operator to loop through all possible colors we specify if we have lots of classes
+    #         color = self.COLORS[int(class_id) % len(self.COLORS)]
+    #         # class_id is an np.array of 1 element
+    #         label_name = self._classes[class_id[0]]
+    #         label = "%s : %.3f" % (label_name, confidence)
+    #         # box has the format (x,y,width,height)
+    #         x, y, width, height = box
+    #         center_x = int(x + width / 2)
+    #         center_y = int(y + height / 2)
+
+    #         cv2.rectangle(self._img, box, color, self.FONT_THICCNESS)
+    #         cv2.circle(self._img, (center_x, center_y), 2, (0, 255, 0))
+
+    #         # -1 to draw ABOVE the box
+    #         self.write_text(label, x, y, color, 14, position=-1)
+
+    #         # END OF DRAWING BOXES
+    #         # START PROCESS DISTANCES
+
+    #         FRAME_HEIGHT, FRAME_WIDTH, _ = self._img.shape
+    #         # FOV_HORZ = 1.0855
+    #         # FOV_VERT = 0.8517
+    #         SCALE_HEIGHT = 0
+    #         SCALE_WIDTH = 0
+    #         MAX_DISTANCE = 4
+    #         DUPLICATE_THRESHOLD = 1
+    #         if label == "sheep":
+    #             # 122 = 61 height @ 2m
+    #             # 146.5 = 293 height @ 0.5m
+    #             SCALE_HEIGHT = 125.5
+    #             SCALE_WIDTH = 135.5
+    #         elif label == "coke":
+    #             # 92 = 92 height @ 1m
+    #             SCALE_HEIGHT = 93.5
+    #             SCALE_WIDTH = 37.5
+
+    #         # box attributes [x,y,width,height]
+    #         Xb, Yb, Wb, Hb = box
+    #         # focal_length_w = Wb / SCALE_WIDTH
+    #         # focal_length = Hb / SCALE_HEIGHT
+    #         # distance_w = SCALE_WIDTH / Wb
+    #         distance_h = SCALE_HEIGHT / Hb
+    #         distance = distance_h
+    #         # object's position in WORLD FRAME
+    #         Xw = distance * np.cos(robot_pose[2]) + robot_pose[0]
+    #         Yw = distance * np.sin(robot_pose[2]) + robot_pose[1]
+
+    #         save_pose = False
+    #         # check if box centre is within 25px of centre of frame
+    #         if abs((Xb + Wb / 2) - FRAME_WIDTH / 2) < 25:
+    #             if distance < MAX_DISTANCE:
+    #                 save_pose = True
+    #                 if seen_objects is not None:
+    #                     for obj in seen_objects:
+    #                         obj_dist = np.sqrt((obj[1] - Xw)**2 +
+    #                                         (obj[2] - Yw)**2)
+    #                         if obj_dist < DUPLICATE_THRESHOLD:
+    #                             save_pose = False
+    #         max_sheep = 0
+
+    #         if save_pose:
+    #             seen_objects.append([label_name, Xw, Yw])
+
+    #         # Xr, Yr, theta = self.__ROBOT_POSE
+
+    #         x_label = "Xw:" + str(np.around(Xw, 2))
+    #         y_label = "Yw:" + str(np.around(Yw, 2))
+    #         w_label = "W: %.0f" % (width)
+    #         h_label = "H: %.0f" % (height)
+
+    #         dist_label = "D(m): %.3f" % (distance)
+    #         self.write_text(x_label, x, y + height, color, 14, position=1)
+    #         self.write_text(y_label, x, y + height, color, 14, position=2)
+    #         self.write_text(w_label, x, y + height + 40, color, 14, position=1)
+    #         self.write_text(h_label, x, y + height + 40, color, 14, position=2)
+    #         self.write_text(dist_label, x, y, color, 14, position=-2)
+
+    #     # END PROCESS DISTANCES
+    #     inf_time, inf_rate = self.__TIMER.get_diagnostics("inference")
+    #     inf_label = "INF(ms): %6.3fms" % (inf_time)
+    #     self.write_text(inf_label, 0, 25, self.COLORS[0], position=1)
+
+    #     self.__TIMER.stop("draw")
+
+    #     draw_time, draw_rate = self.__TIMER.get_diagnostics("draw")
+    #     draw_label = "DRW(ms): %6.3fms" % (draw_time)
+    #     self.write_text(draw_label, 0, 25, self.COLORS[0], position=2)
+
+    #     fps_label = "FPS: %6.2fHz" % (1 * 1000 / (draw_time + inf_time))
+    #     self.write_text(fps_label, 0, 25, self.COLORS[0], position=3)
+
+    #     cv2.imshow("YOLO", self._img)
+    #     key = cv2.waitKey(1)
+    #     if key == 27 or key == ord("q"):
+    #         # del self
+    #         cv2.destroyAllWindows()
+    #         self._img.release()
+
+    # return seen_objects
 
     def write_text(
         self,
@@ -158,9 +294,10 @@ class YOLO:
         )
 
     # TODO: Triangulation
-    def generate_3d_pos(self):
-        fov_horz = 1.0855
-        foz_vert = 0.8517
+    def generate_3d_pos(self, label: str, box: list):
+        # print(f"X:{np.around(Xr,2)} Y:{np.around(Yr,2)}")
+
+        return distance
 
     # def __del__(self):
     #     # Some weird funky stuff going on with manualSLAM.py

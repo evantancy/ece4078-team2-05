@@ -2,7 +2,7 @@ import cv2
 
 
 class CvTimer:
-    OPTIMIZED = cv2.useOptimized()
+    # OPTIMIZED = cv2.setUseOptimized(True)
     WIDTH = 2
     PRECISION = 2
 
@@ -42,8 +42,11 @@ class CvTimer:
         """
         return self._dict[name][2:]
 
+    def print_process(self, proc_name) -> None:
+        time_taken, rate = self._dict[proc_name][2:]
+        print(f"{proc_name} took {time_taken:.3f}ms @ {rate:.2f}Hz")
+
     def print_summary(self) -> None:
         for process in self._dict:
-            time_taken = self._dict[process][2]
-            rate = self._dict[process][3]
-            print(f"{process} took {time_taken:.2f}ms @ {rate:.2f}Hz\n")
+            time_taken, rate = self._dict[process][2:]
+            print(f"{process} took {time_taken:.3f}ms @ {rate:.2f}Hz")

@@ -30,7 +30,7 @@ class Operate:
     # TODO: Feed SLAM as constructor param
     def __init__(self, datadir, ppi, yolo_obj):
         # Initialise
-        #self.yolo = yolo_obj
+        self.yolo = yolo_obj
         self.ppi = ppi
         self.ppi.set_velocity(0, 0)
         self.img = np.zeros([240, 320, 3], dtype=np.uint8)
@@ -96,21 +96,25 @@ class Operate:
         for i in range(len(slam.taglist)):
             self.marker_list.append([slam.taglist[i], slam.markers[0][i], slam.markers[1][i]])
         self.marker_list = sorted(self.marker_list, key=lambda x: x[0])
+        self.seen_objects = sorted(self.seen_objects, key=lambda x: x[0])
         with open(map_f,'w') as f:
             f.write('object, x, y\n')
             for markers in self.marker_list:
-                    f.write('Marker'+str(markers[0])+', '+str(markers[1])+', '+str(markers[2]))
-                    f.write('\n')
+                f.write('Marker'+str(markers[0])+', '+str(markers[1])+', '+str(markers[2]))
+                f.write('\n')
+            for markers in self.seen_objects:
+                f.write(str(markers[0])+', '+str(markers[1])+', '+str(markers[2]))
+                f.write('\n')
 
     def process(self):
 
         # Show SLAM and camera feed side by side
         fig, ax = plt.subplots(1, 2)
-        # fig, ax = plt.subplots()
         img_artist = ax[1].imshow(self.img)
 
         # Main loop
         self.dt1 = time.time()
+        self.seen_objects = []
         while True:
             Timer.start('main')
 
@@ -118,17 +122,18 @@ class Operate:
             self.control()
             self.vision()
             # pass image into yolo ONCE!!
-            #self.yolo.run_inference(self.img)
-            #self.yolo.process(self.slam.get_state_vector())
+            self.yolo.run_inference(self.img)
+            self.seen_objects = self.yolo.process(self.slam.get_state_vector(), self.seen_objects)
 
             # Save SLAM map
             self.write_map(self.slam)
 
             # Output visualisation
-            # self.display(fig, ax)
+            self.display(fig, ax)
 
             Timer.stop('main')
             # Timer.print_summary()
+
 
 
 if __name__ == "__main__":
@@ -138,8 +143,8 @@ if __name__ == "__main__":
     datadir = "{}/calibration/".format(currentDir)
     # connect to the robot
     ppi = PenguinPi()
-    #yolo = YOLO(gpu=1)
-    yolo = []
+    yolo = YOLO(gpu=1)
+    # yolo = []
     # Perform Manual SLAM
     operate = Operate(datadir, ppi, yolo)
     operate.process()
