@@ -6,6 +6,8 @@ from PenguinPiC import PenguinPi
 
 
 class Keyboard:
+    COMPENSATION = 8
+
     def __init__(self, ppi=None, forward_vel=60, turning_vel=28) -> None:
         # storage for key presses
         self.directions = [False for _ in range(4)]
@@ -102,14 +104,14 @@ class Keyboard:
         # Update speed - Check the current state of the robot movement so we can update the wheel velocity from the speed adjustments accordingly
         [left_target, right_target, _] = self.latest_drive_signal()
 
-        if left_target > right_target:
+        if left_target > (right_target + self.COMPENSATION * 2):
             left_target = self.wheel_vel_turning
             right_target = -self.wheel_vel_turning
         elif left_target < right_target:
             left_target = -self.wheel_vel_turning
             right_target = self.wheel_vel_turning
         elif left_target > 0 and right_target > 0:
-            left_target = self.wheel_vel_forward
+            left_target = self.wheel_vel_forward + self.COMPENSATION
             right_target = self.wheel_vel_forward
         elif left_target < 0 and right_target < 0:
             left_target = -self.wheel_vel_forward
@@ -127,7 +129,7 @@ class Keyboard:
                 if direction == True:
                     if index == 0:
                         # Forward
-                        left_target = self.wheel_vel_forward
+                        left_target = self.wheel_vel_forward + self.COMPENSATION
                         right_target = self.wheel_vel_forward
 
                     elif index == 1:
@@ -161,6 +163,9 @@ class Keyboard:
         """
         l, r = self.wheel_vels
         k = self.key_pressed
+        if k == Key.up:
+            l = l - self.COMPENSATION
+
         return l, r, k
 
 
