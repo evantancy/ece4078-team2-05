@@ -2,16 +2,26 @@ import numpy as np
 
 
 class Robot:
-    def __init__(self, wheels_width: np.ndarray, wheels_scale: np.ndarray, camera_matrix: np.ndarray, camera_dist: np.ndarray):
+    def __init__(
+        self,
+        wheels_width: np.ndarray,
+        wheels_scale: np.ndarray,
+        camera_matrix: np.ndarray,
+        camera_dist: np.ndarray,
+    ):
         # State is a vector of [x,y,theta]' (3x1 column vector)
-        self.state = np.zeros((3,1))
+        self.state = np.zeros((3, 1))
 
         # Wheel parameters
-        self.wheels_width = wheels_width  # The distance between the left and right wheels
+        self.wheels_width = (
+            wheels_width  # The distance between the left and right wheels
+        )
         self.wheels_scale = wheels_scale  # The scaling factor converting ticks/s to m/s
 
         # Camera parameters
-        self.camera_matrix = camera_matrix  # Matrix of the focal lengths and camera centre
+        self.camera_matrix = (
+            camera_matrix  # Matrix of the focal lengths and camera centre
+        )
         self.camera_dist = camera_dist  # Distortion coefficients
 
     def drive(self, drive_meas):
@@ -19,7 +29,9 @@ class Robot:
         # dt is the length of time to drive for
 
         # Compute the linear and angular velocity
-        linear_velocity, angular_velocity = self.convert_wheel_speeds(drive_meas.left_speed, drive_meas.right_speed)
+        linear_velocity, angular_velocity = self.convert_wheel_speeds(
+            drive_meas.left_speed, drive_meas.right_speed
+        )
 
         # Apply the velocities
         dt = drive_meas.dt
@@ -30,8 +42,12 @@ class Robot:
             # Radius of curvature
             R = linear_velocity / angular_velocity
             predict_theta = current_theta + angular_velocity * dt
-            self.state[0] = self.state[0] + R*(-np.sin(current_theta) + np.sin(predict_theta))
-            self.state[1] = self.state[1] + R*(np.cos(current_theta) - np.cos(predict_theta))
+            self.state[0] = self.state[0] + R * (
+                -np.sin(current_theta) + np.sin(predict_theta)
+            )
+            self.state[1] = self.state[1] + R * (
+                np.cos(current_theta) - np.cos(predict_theta)
+            )
             self.state[2] = predict_theta
         else:
             self.state[0] = self.state[0] + linear_velocity * dt * np.cos(self.state[2])
@@ -57,7 +73,7 @@ class Robot:
         markers_bff = np.concatenate(measurements, axis=1)
         return markers_bff
 
-    def convert_wheel_speeds(self, left_speed, right_speed):
+    def convert_wheel_speeds(self, left_speed: int, right_speed: int) -> list:
         # Convert to m/s
         left_speed_m = left_speed * self.wheels_scale
         right_speed_m = right_speed * self.wheels_scale
@@ -100,7 +116,7 @@ class Robot:
 
         DH = np.zeros((n, m))
 
-        robot_xy = self.state[0:2,:]
+        robot_xy = self.state[0:2, :]
         th = self.state[2]
         Rot_theta = np.block([[np.cos(th), -np.sin(th)], [np.sin(th), np.cos(th)]])
         DRot_theta = np.block([[-np.sin(th), -np.cos(th)], [np.cos(th), -np.sin(th)]])
