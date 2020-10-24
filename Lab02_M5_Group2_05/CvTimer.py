@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 
 class CvTimer:
@@ -14,8 +15,9 @@ class CvTimer:
         Args:
             name (str): Name of process to begin monitor.
         """
-        # start time
+        # create entry
         self._dict[name] = [0, 0, 0, 0]
+        # start time
         self._dict[name][0] = cv2.getTickCount()
 
     def stop(self, name: str) -> None:
@@ -36,17 +38,20 @@ class CvTimer:
         """
         Args:
             name (str): Name of process to retrieve time taken (ms)
-
         Returns:
             list: [time taken(ms), rate(Hz)]
         """
         return self._dict[name][2:]
 
-    def print_process(self, proc_name) -> None:
+    def print_process(self, proc_name: str) -> None:
+        """
+        Args:
+            proc_name ([type]): Print specific process info
+        """
         time_taken, rate = self._dict[proc_name][2:]
-        print(f"{proc_name} took {time_taken:.3f}ms @ {rate:.2f}Hz")
+        print(f"{proc_name} took {time_taken:.1f}ms @ {rate:.1f}Hz")
 
-    def print_summary(self) -> None:
+    def print_all(self) -> None:
         for process in self._dict:
-            time_taken, rate = self._dict[process][2:]
-            print(f"{process} took {time_taken:.3f}ms @ {rate:.2f}Hz")
+            self.print_process(process)
+        print("")

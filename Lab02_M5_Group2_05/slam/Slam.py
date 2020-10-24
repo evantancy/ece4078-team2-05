@@ -8,9 +8,6 @@ class Slam:
     # Implementation of an EKF for SLAM
     # The state is ordered as [x; y; theta; l1x; l1y; ...; lnx; lny]
 
-    # Utility
-    # -------
-
     def __init__(self, robot: Robot):
         # State components
         self.robot = robot
@@ -82,8 +79,8 @@ class Slam:
 
         y = z - z_hat
         x = x_hat + K @ y
-        # print("max", np.max(K), end="\n")
-        self.set_state_vector(x)  ### change back to x to use ekf
+
+        self.set_state_vector(x)
         self.P = (np.eye(x.shape[0]) - K @ C) @ self.P
         # ------------------------------------------
 

@@ -28,7 +28,7 @@ class PenguinPi:
             )
         else:
             assert time > 0, "Time must be positive."
-            assert time < 60, "Time must be less than network timeout (20s)."
+            assert time < 20, "Time must be less than network timeout (20s)."
             r = requests.get(
                 "http://"
                 + self.ip
