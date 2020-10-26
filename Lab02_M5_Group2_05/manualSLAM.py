@@ -6,6 +6,7 @@ import json
 import time
 import cv2
 
+matplotlib.use("TkAgg")
 
 # Import keyboard teleoperation components
 from PenguinPiC import PenguinPi
@@ -21,9 +22,8 @@ import slam.aruco_detector as aruco
 import slam.Measurements as Measurements
 
 map_f = "estimated_poses.csv"
-true_map_f = "TruePose_demo_arena_dev_no_collision.csv"
-true_map_no_col_f = "TruePose_demo_arena_dev.csv"
-Timer = CvTimer()
+true_map_no_col_f = "TruePose_demo_arena_dev_no_collision.csv"
+true_map_f = "TruePose_demo_arena_dev.csv"
 
 # Manual SLAM
 class Operate:
@@ -49,6 +49,7 @@ class Operate:
 
         self.aruco_det = aruco.aruco_detector(self.pibot, marker_length=0.1)
         self.slam = Slam.Slam(self.pibot)
+        self._TIMER = CvTimer()
 
     def getCalibParams(self, datadir) -> list:
         # Imports camera / wheel calibration parameters
@@ -84,6 +85,7 @@ class Operate:
         self.slam.draw_slam_state(ax[0])
         plt.pause(0.001)
         ax[1].cla()
+        # flip BGR to RGB format
         ax[1].imshow(self.img[:, :, -1::-1])
 
     def write_map(self, slam):
@@ -120,35 +122,44 @@ class Operate:
         # objects picked up by YOLO
         self.seen_objects = []
         while True:
-            Timer.start("SLAM")
+            self._TIMER.start("control")
             self.control()
-            self.vision()
-            Timer.stop("SLAM")
+            self._TIMER.stop("control")
 
-            Timer.start("YOLO")
+            self._TIMER.start("vision")
+            self.vision()
+            self._TIMER.stop("vision")
+
             # pass image into yolo ONCE!!
             self.yolo.run_inference(self.img)
             self.seen_objects = self.yolo.process(
                 self.slam.get_state_vector(), self.seen_objects
             )
-            Timer.stop("YOLO")
 
-            Timer.start("write_map")
             # Save SLAM map
             self.write_map(self.slam)
-            Timer.stop("write_map")
 
-            slam_time, slam_rate = Timer.get_diagnostics("SLAM")
-            slam_label = f"SLAM: {slam_time:3.2f}ms @ {slam_rate:3.2f}Hz"
+            control_time, control_rate = self._TIMER.get_diagnostics("control")
+            control_label = f"control: {control_time:3.2f}ms @ {control_rate:3.2f}Hz"
             self.yolo.write_text(
-                slam_label, 0, 25, self.yolo.COLORS[0], position=2, img=self.img
+                control_label, 0, 25, self.yolo.COLORS[0], position=2, img=self.img
+            )
+            vision_time, vision_rate = self._TIMER.get_diagnostics("vision")
+            vision_label = f"vision: {vision_time:3.2f}ms @ {vision_rate:3.2f}Hz"
+            self.yolo.write_text(
+                vision_label, 0, 25, self.yolo.COLORS[0], position=3, img=self.img
             )
 
-            Timer.start("viz")
+            self._TIMER.start("plot")
             # Output visualisation
             self.display(fig, ax)
-            Timer.stop("viz")
-            Timer.print_all()
+            self._TIMER.stop("plot")
+            plot_time, plot_rate = self._TIMER.get_diagnostics("plot")
+            plot_label = f"plot: {plot_time:3.2f}ms @ {plot_rate:3.2f}Hz"
+            self.yolo.write_text(
+                plot_label, 0, 25, self.yolo.COLORS[0], position=4, img=self.img
+            )
+            # self._TIMER.print_all()
 
     # def __del__(self):
     # self.ppi.set_velocity(0, 0)
@@ -160,7 +171,6 @@ if __name__ == "__main__":
     datadir = "{}/calibration/".format(currentDir)
     ppi = PenguinPi()
     yolo = YOLO(gpu=1)
-
     # Perform Manual SLAM
     operate = Operate(datadir, ppi, yolo)
     operate.process()
