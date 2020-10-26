@@ -1,52 +1,41 @@
 # How to run our robot
 
-- Make sure to update penguinpi.sdf in catkin_ws/src/penguinpi_description/urdf/penguinpi.sdf with our sdf file
-	(some changes to the friction value)
-- After setting up the environment, open a new terminal and run python3 manualSLAM.py
-- Press arrow keys to control the robot: up = forwards, down = reverse, left = left, right = right. Use spacebar to stop.
+## Setting up the environment
+- Run `sudo apt install python3-tk` to prevent matplotlib from stealing screen focus
+- Extract our zip file
+- Make sure to update penguinpi.sdf in `catkin_ws/src/penguinpi_description/urdf/penguinpi.sdf` with our sdf file in the ***parent directory of Lab02_M5_Group2_05*** (some changes to the friction values)
+### Running on GPU
+In order to enable OpenCV's DNN module for YOLOv4 to work properly using GPU.
+- Please keep `opencv-python`, uninstall `opencv-contrib-python`, and run our installation & build scripts for...
+  - OpenCV -> `install_opencv.sh`
+  - CUDA -> `install_cuda_toolkit.sh`
+  - cuDNN -> `install_cudnn.sh`
+- Ensure that `gpu=1` in the YOLO constructor in `manualSLAM.py`
+### Running on CPU
+- Keep `opencv-python` and `opencv-contrib-python`, and set `gpu=0` in the YOLO constructor in `manualSLAM.py`
+
+# Run the robot
+- Run roslaunch on either map (the demo map)
+- After setting up the environment, open a new terminal and run **`python3 manualSLAM.py`** in the folder `Lab02_M5_Group2_05/`
+- Press arrow keys to control the robot: up = forwards, down = reverse, left = left, right = right. You only need to press the keyboard button once for it to drive in the specific direction. Press the space button to stop.
 - Our WASD keys are used for changing speed functions, however we please ask that you do not use this, as our robot has only been calibrated to drive at a certain speed (60 ticks/s forward, and 28 ticks/s turning). So please do not use any keys except the arrow keys.
-- Wheel_calibration values: 1.142968276500685443e+00 for baseline and 4.629629629629629373e-03 for scale. These values should be in the respective txt files, but in case they get lost these are the values we had. Within the manualSLAM.py script we multiplied our baseline value by 1.1.
-- slam.txt- the slam.txt file for one of our best test runs has been included in this submission, in case the values are overided, here are our values:
-  "AR_tag_list": [
-    11,
-    5,
-    9,
-    7,
-    3,
-    1
-  ],
-  "map": [
-    [
-      1.330861183035292,
-      -0.8339833768024145,
-      3.531267361932977,
-      1.8600193409397807,
-      -1.4289422179737608,
-      -2.1661805408529156
-    ],
-    [
-      1.75109678374075,
-      1.5534509057424748,
-      0.8315943161453128,
-      4.977775503121363,
-      4.39832366872863,
-      -0.14604414040194363
-    ]
+- Wheel_calibration values:
+  - baseline: `1.142968276500685443e+00`
+  - scale: `4.629629629629629373e-03`
 
-Highlights for running the robot in another environment:
-- If a marker has been detected, start scanning by rotating a couple of times left and right before moving on to the next marker.
-- If you can, please do your best to align the predicted arrow with the actual direction the robot is facing (by pressing right and left arrows multiple times until it matches) before moving forward or backward to scan a marker. However our marker does not deviate too far from the true position, so this hopefully shouldnt be an issue.
+These values should be in the respective txt files, but in case they get lost these are the values we had. Within the `manualSLAM.py` script we further scaled our baseline value by `1.0` and scale by `0.5`.
 
-Recommended path for full mark in penguinpi_arena (all within 1.5m range):
-- From start position, scan left and right around 1-2 times to get an accurate position of markers 11 and 5. 
-- After scanning, facing slightly to the right of the sheep (so we don't collide) go towards marker 9 and the robot will scan marker 9.
-- Steer around 90 degrees to the left after passing the sheep, towards marker 7. Once almost perpendicular to marker 7, rotate to the right to scan it.
-- Steer around 150 degrees to the left, towards marker 3, until it is succefully picked up. Then drive towards it until you are within a metre of it.
-- rotate 360 degrees on the spot to pick up markers 7 and 9 again (if they are visible), until you face marker 3 again.
-- Next, rotate to the left (away from marker 3) on a path towards marker 1, drive staright until marker 1 is visible, and adjust the path so that when possible you are travelling straight down (-pi/2 radians in world frame).
-- Stop once you almost reach the beginning of the corridor, then turn left (from the robots perspective) to pick up markers 11 and 5 again, then stop.
-- End
-	
-Please see our video (~2 mins) titled "PenguinPi_M2_Best_Run.mp4" to see one of our best test runs and the path we have described above, also note the video is running at 4x speed.
+# Ideal robot path
+1. Make sure robot is in position 0 (x,y,yaw)
+2. Start by rotating 360 degree anticlockwise
+3. Rotate the robot to face Marker5 (1.374260, 9.588080) and go straight towards it and stop when y~4 position
+4. Rotate 360 degree anticlockwise again, then go towards marker 5 until y~7.5
+5. Turn towards Marker29 (-5.372030, 1.050860) and go towards it, until around y~2.5
+6. Turn to the left facing Marker13 (-1.346820, -2.386830) and go straight, until it detects the sheep
+7. Turn to the left facing Marker11 (4.001650, -1.552220) and go straight until it detects the coke can
+8. Rotate 360 degree anticlockwise.
+9. Turn to the left facing Marker23 (3.379770, 6.462060) and go straight until y~5
+10. Do a final 360 degree clockwise turn.
 
-
+# Result
+The robot will detect 5 sheeps, 5 or 6 cokes (possibly 1 false coke from aruco marker falsely detected as coke), 10 or 11 aruco markers (possibly 1 falsely detected aruco marker) all within 1m range of the true position. This will be constantly updated in the file estimated_poses.csv throughout the test run.
