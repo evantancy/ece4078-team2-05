@@ -9,16 +9,22 @@ from CvTimer import CvTimer
 class YOLO:
     CONFIDENCE_THRESHOLD = 0.35
     NMS_THRESHOLD = 0.2
-    # hot pink baby, white, green, red
+    # hot pink baby, white, green
     # BGR! not RGB
-    COLORS = [(255, 51, 255), (255, 255, 255), (0, 255, 0), (0, 0, 255)]
-    SIZE = {"small": (320, 320), "medium": (416, 416), "large": (608, 608)}
+    COLORS = [(255, 51, 255), (255, 255, 255), (0, 255, 0)]
+    SIZE = {
+        "small": (320, 320),
+        "medium": (416, 416),
+        "large": (608, 608),
+        "custom_1": (512, 512),
+    }
     FONT = cv2.FONT_HERSHEY_SIMPLEX
     FONT_SIZE = 0.5
     # thiccness needs to be an integer!!
     FONT_THICCNESS = 2
     # number of pixels
     TEXT_OFFSET = 18
+
     # TODO: Change to absolute path
     def __init__(
         self,
@@ -48,7 +54,7 @@ class YOLO:
             net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
             net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
         else:
-            net.setPreferableBackend(cv2.dnn.DNN_OPENCV)
+            net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
             net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
         self._model = cv2.dnn_DetectionModel(net)
@@ -57,20 +63,31 @@ class YOLO:
         self._TIMER = CvTimer()
         self.seen_objects = dict()
 
-    def run_inference(self, cv2_frame) -> None:
+    def run_inference(
+        self, cv2_frame: np.ndarray, external_timer: CvTimer = None
+    ) -> None:
         # detecting objects
-        self._TIMER.start("inference")
-        self._TIMER.start("YOLO")
+        Timer = external_timer
+        if external_timer is None:
+            Timer = self._TIMER
+        Timer.start("YOLO")
+        Timer.start("inference")
 
         self._img = cv2_frame
         self._classes_detected, self._confidences, self._boxes = self._model.detect(
             self._img, self.CONFIDENCE_THRESHOLD, self.NMS_THRESHOLD
         )
 
-        self._TIMER.stop("inference")
+        Timer.stop("inference")
 
-    def process(self, robot_pose=np.zeros(3), seen_objects=[]) -> None:
-        self._TIMER.start("draw")
+    def process(
+        self, robot_pose=np.zeros(3), seen_objects=[], external_timer: CvTimer = None
+    ) -> None:
+
+        Timer = external_timer
+        if external_timer is None:
+            Timer = self._TIMER
+        Timer.start("draw")
 
         # uncomment for colors that change every iteration
         # self.COLORS = np.random.uniform(0, 255, size=(len(self._classes), 3))
@@ -96,11 +113,11 @@ class YOLO:
 
             # box has the format (x,y,width,height)
             x, y, width, height = box
-            center_x = int(x + width / 2)
-            center_y = int(y + height / 2)
+            centre_x = int(x + width / 2)
+            centre_y = int(y + height / 2)
 
             cv2.rectangle(self._img, box, color, self.FONT_THICCNESS)
-            cv2.circle(self._img, (center_x, center_y), 2, (0, 255, 0))
+            cv2.circle(self._img, (centre_x, centre_y), 1, color, 2)
 
             # -1 to draw ABOVE the box
             self.write_text(label, x, y, color, 14, position=-1)
@@ -160,13 +177,13 @@ class YOLO:
 
         # END PROCESS DISTANCES
         # PRINT DIAGNOSTICS ON OPENCV FRAME
-        inf_time = self._TIMER.get_diagnostics("inference")[0]
+        inf_time = Timer.get_diagnostics("inference")[0]
         inf_label = f"INF(ms): {inf_time:.2f}ms"
         # self.write_text(inf_label, 0, 25, self.COLORS[0], position=1)
 
-        self._TIMER.stop("draw")
+        Timer.stop("draw")
 
-        draw_time = self._TIMER.get_diagnostics("draw")[0]
+        draw_time = Timer.get_diagnostics("draw")[0]
         draw_label = f"DRW(ms): {draw_time:3.2f}"
         # self.write_text(draw_label, 0, 25, self.COLORS[0], position=2)
 
@@ -176,7 +193,7 @@ class YOLO:
         self.write_text(fps_label, 0, 25, self.COLORS[0], position=1)
 
         # cv2.imshow("YOLO", self._img)
-        self._TIMER.stop("YOLO")
+        Timer.stop("YOLO")
 
         key = cv2.waitKey(1)
         if key == 27 or key == ord("q"):
