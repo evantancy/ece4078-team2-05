@@ -7,8 +7,8 @@ See `ECE4078LabProject.pdf` for details
 
 - [x] M1: Teleoperating the robot
 - [x] M2: Mapping, localisation, and navigation
-- [ ] M3: Vision-based recognition
-- [ ] M4: Learning and planning
-- [ ] M5: Integrated system
+- [x] M3: Vision-based recognition
+- [x] M4: Learning and planning
+- [x] M5: Integrated system
 
 ## Extra Features
