@@ -21,9 +21,7 @@ import slam.Robot as Robot
 import slam.aruco_detector as aruco
 import slam.Measurements as Measurements
 
-map_f = "estimated_poses.csv"
-true_map_no_col_f = "TruePose_demo_arena_dev_no_collision.csv"
-true_map_f = "TruePose_demo_arena_dev.csv"
+map_f = "Lab02_M5_Map_Group2_05.csv "
 
 # Manual SLAM
 class Operate:
@@ -96,6 +94,8 @@ class Operate:
             )
         self.marker_list = sorted(self.marker_list, key=lambda x: x[0])
         self.seen_objects = sorted(self.seen_objects, key=lambda x: x[0])
+        n_sheep = 0
+        n_coke = 0
         with open(map_f, "w") as f:
             f.write("object, x, y\n")
             for markers in self.marker_list:
@@ -109,8 +109,16 @@ class Operate:
                 )
                 f.write("\n")
             for markers in self.seen_objects:
+                n = 0
+                if markers[0] == "sheep":
+                    n_sheep += 1
+                    n = n_sheep
+                elif markers[0] == "coke":
+                    n_coke += 1
+                    n = n_coke
+
                 f.write(
-                    str(markers[0]) + ", " + str(markers[1]) + ", " + str(markers[2])
+                    str(markers[0]) + str(n) + ", " + str(markers[1]) + ", " + str(markers[2])
                 )
                 f.write("\n")
 
