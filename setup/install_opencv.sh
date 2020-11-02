@@ -18,24 +18,27 @@ echo "This number should be your (nproc-2) or (nproc-4)"
 echo "DO NOT USE a shell variable in this script, it will crash"
 
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
-	-D CMAKE_INSTALL_PREFIX=/usr/local \
-	-D INSTALL_PYTHON_EXAMPLES=ON \
-	-D INSTALL_C_EXAMPLES=OFF \
-	-D OPENCV_ENABLE_NONFREE=ON \
-	-D WITH_CUDA=ON \
-	-D WITH_CUDNN=ON \
-	-D OPENCV_DNN_CUDA=ON \
-	-D ENABLE_FAST_MATH=1 \
-	-D CUDA_FAST_MATH=1 \
-	-D WITH_CUBLAS=1 \
-	-D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
-	-D HAVE_opencv_python3=ON \
-	-D PYTHON_EXECUTABLE=/usr/bin/python3 \
-	-D BUILD_EXAMPLES=ON ..
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D INSTALL_PYTHON_EXAMPLES=ON \
+    -D INSTALL_C_EXAMPLES=OFF \
+    -D OPENCV_ENABLE_NONFREE=ON \
+    -D WITH_CUDA=ON \
+    -D WITH_CUDNN=ON \
+    -D OPENCV_DNN_CUDA=ON \
+    -D ENABLE_FAST_MATH=1 \
+    -D CUDA_FAST_MATH=1 \
+    -D WITH_CUBLAS=1 \
+    -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+    -D HAVE_opencv_python3=ON \
+    -D PYTHON_EXECUTABLE=/usr/bin/python3 \
+    -D BUILD_EXAMPLES=ON ..
 
-make -j8
+make --jobs=$(nproc --all)
 sudo make install
 sudo ldconfig
 
 echo "Checking opencv install version ..."
+echo "OpenCV version for Python3:"
 python3 -c "import cv2; print(cv2.__version__)"
+echo "OpenCV version for Python2:"
+python2 -c "import cv2; print(cv2.__version__)"
