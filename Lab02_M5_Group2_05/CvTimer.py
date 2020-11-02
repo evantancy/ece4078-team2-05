@@ -26,6 +26,7 @@ class CvTimer:
             name (str): Name of process to stop monitoring.
         """
         # end time
+        # TODO: Remove storage of end time
         self._dict[name][1] = cv2.getTickCount()
         # time taken (ms)
         self._dict[name][2] = (

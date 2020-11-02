@@ -189,7 +189,7 @@ class YOLO:
 
         process_time = draw_time + inf_time
         fps = 1000 / process_time
-        fps_label = f"YOLO:{process_time:3.2f}ms @{fps:3.2f}Hz"
+        fps_label = f"YOLO: {process_time:3.2f}ms @{fps:3.2f}Hz"
         self.write_text(fps_label, 0, 25, self.COLORS[0], position=1)
 
         # cv2.imshow("YOLO", self._img)

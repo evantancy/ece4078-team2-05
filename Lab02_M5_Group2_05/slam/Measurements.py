@@ -17,4 +17,3 @@ class DriveMeasurement:
         self.dt = dt
         self.left_cov = left_cov
         self.right_cov = right_cov
-        

@@ -6,6 +6,7 @@ from PenguinPiC import PenguinPi
 
 
 class Keyboard:
+    # TODO: Change to factor 68 / 60
     COMPENSATION = 8
 
     def __init__(self, ppi=None, forward_vel=60, turning_vel=28) -> None:
