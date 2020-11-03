@@ -124,20 +124,40 @@ class Slam:
 
     # Plotting functions
     # ------------------
-
+    # TODO: blit
+    # https://matplotlib.org/3.3.0/tutorials/advanced/blitting.html
     def draw_slam_state(self, ax) -> None:
+        # ax.grid(True)
+        # ax.grid(which="major", alpha=1.0)
+        # ax.grid(which="minor", alpha=0.4)
+
+        x_min, x_max = -7, 7
+        ax.set_xlim(x_min, x_max)
+        # x_major_ticks = np.arange(x_min, x_max + 1, 1)
+        # x_minor_ticks = np.arange(x_min, x_max + 1, 0.5)
+        # ax.set_xticks(x_major_ticks)
+        # ax.set_xticks(x_minor_ticks, minor=True)
+
+        y_min, y_max = -3, 11
+        ax.set_ylim(y_min, y_max)
+        # y_major_ticks = np.arange(y_min, y_max + 1, 1)
+        # y_minor_ticks = np.arange(y_min, y_max + 1, 0.5)
+        # ax.set_xticks(y_major_ticks)
+        # ax.set_xticks(y_minor_ticks, minor=True)
+
         # Draw landmarks
         if self.number_landmarks() > 0:
+            # (x,y) coordinates
             ax.plot(self.markers[0, :], self.markers[1, :], "ko")
-
+        # print(self.markers)
         # Draw robot
-        arrow_scale = 0.4
+        ARROW_SCALE = 0.8
         ax.arrow(
             self.robot.state[0, 0],
             self.robot.state[1, 0],
-            arrow_scale * np.cos(self.robot.state[2, 0]),
-            arrow_scale * np.sin(self.robot.state[2, 0]),
-            head_width=0.3 * arrow_scale,
+            ARROW_SCALE * np.cos(self.robot.state[2, 0]),
+            ARROW_SCALE * np.sin(self.robot.state[2, 0]),
+            head_width=0.3 * ARROW_SCALE,
         )
 
         # Draw covariance
@@ -155,8 +175,6 @@ class Slam:
         # ax.axis('equal')
         # ax.set_xlim(-5+self.robot.state[0],5+self.robot.state[0])
         # ax.set_ylim(-5+self.robot.state[1],5+self.robot.state[1])
-        ax.set_xlim(-7, 7)
-        ax.set_ylim(-3, 11)
 
     @staticmethod
     def make_ellipse(x, P):
