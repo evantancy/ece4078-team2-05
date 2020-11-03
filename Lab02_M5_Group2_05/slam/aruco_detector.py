@@ -2,6 +2,9 @@ import numpy as np
 import cv2
 import slam.Measurements as Measurements
 
+PINK = (255, 51, 255)
+
+
 class aruco_detector:
     def __init__(self, robot, marker_length=0.1):
         self.camera_matrix = robot.camera_matrix
@@ -9,36 +12,125 @@ class aruco_detector:
 
         self.marker_length = marker_length
         self.aruco_params = cv2.aruco.DetectorParameters_create()
+
+        # THESE ARE ALL DEFAULT PARAMS
+        self.aruco_params.adaptiveThreshWinSizeMin = 3
+        self.aruco_params.adaptiveThreshWinSizeMax = 23
+        self.aruco_params.adaptiveThreshWinSizeStep = 10
+        self.aruco_params.adaptiveThreshConstant = 7
+        self.aruco_params.minMarkerPerimeterRate = 0.03
+        self.aruco_params.maxMarkerPerimeterRate = 4.0
+        self.aruco_params.polygonalApproxAccuracyRate = 0.03
+        self.aruco_params.minCornerDistanceRate = 0.05
+        self.aruco_params.minDistanceToBorder = 3
+        self.aruco_params.minMarkerDistanceRate = 0.05
+        self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_NONE
+        self.aruco_params.cornerRefinementWinSize = 3
+        self.aruco_params.cornerRefinementMaxIterations = 30
+        self.aruco_params.cornerRefinementMinAccuracy = 0.1
+        self.aruco_params.markerBorderBits = 1
+        self.aruco_params.perspectiveRemovePixelPerCell = 4
+        self.aruco_params.perspectiveRemoveIgnoredMarginPerCell = 0.13
+        self.aruco_params.maxErroneousBitsInBorderRate = 0.35
+        self.aruco_params.minOtsuStdDev = 5.0
+        self.aruco_params.errorCorrectionRate = 0.6
+
+        # CUSTOM PARAMS HERE
+        # DO NOT USE CORNER_REFINE_CONTOUR
+        self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
+        self.aruco_params.cornerRefinementWinSize = 3
+        self.aruco_params.cornerRefinementMaxIterations = 40
         self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_100)
-    
+
     def detect_marker_positions(self, img):
         # Perform detection
-        corners, ids, rejected = cv2.aruco.detectMarkers(img, self.aruco_dict, parameters=self.aruco_params)
-        rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(corners, self.marker_length, self.camera_matrix, self.distortion_params)
+        corners, ids, rejected = cv2.aruco.detectMarkers(
+            img,
+            self.aruco_dict,
+            parameters=self.aruco_params,
+            cameraMatrix=self.camera_matrix,
+            distCoeff=self.distortion_params,
+        )
 
         if ids is None:
             return [], img
+
+        # img_gray = None
+        # # If not grayscale, convert
+        # if img.shape[2] == 1:
+        #     img_gray = img
+        # else:
+        #     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # # Loop through all corners
+        # for i in range(len(corners)):
+        #     current_marker = corners[i][0]
+        #     top_left_x
+        #     print(corner.shape)
+        # cv2.imshow("aruco regions", aruco_img)
+        # corners_gray = cv2.goodFeaturesToTrack(
+        #     img_gray, maxCorners=10, qualityLevel=0.01, minDistance=10, blockSize=7
+        # )
+
+        # for i in range(len(corners_gray)):
+        #     x, y = corners_gray[i].ravel()
+        #     cv2.circle(img, (x, y), 3, (255, 51, 255), -1)
+
+        # aruco_board = cv2.aruco_Board.create(corners[0].astype(np.float32), self.aruco_dict, ids)
+        # r_corners, r_ids, rejected_corners, recovered_ids = cv2.aruco.refineDetectedMarkers(
+        #     img,
+        #     board=aruco_board,
+        #     detectedCorners=corners,
+        #     detectedIds=ids,
+        #     rejectedCorners=rejected,
+        #     parameters=self.aruco_params,
+        #     cameraMatrix=self.camera_matrix,
+        #     distCoeff=self.distortion_params,
+        # )
+
+        # Marker length should be scaled to pixel size
+        _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
+            corners, self.marker_length, self.camera_matrix, self.distortion_params
+        )
+
+        id_flag = []
+        MAX_DISTANCE = 15
+
+        if tvecs is not None:
+            for i in range(tvecs.shape[0]):
+                total = np.linalg.norm(tvecs[i][0])
+                if total > MAX_DISTANCE:
+                    id_flag.append(ids[i][0])
 
         # Compute the marker positions
         measurements = []
         seen_ids = []
         for i in range(len(ids)):
-            idi = ids[i,0]
             # Some markers appear multiple times but should only be handled once.
+            idi = ids[i, 0]
+
+            if np.any(id_flag == idi):
+                continue
+
             if idi in seen_ids:
                 continue
             else:
                 seen_ids.append(idi)
 
-            lm_tvecs = tvecs[ids==idi].T
-            lm_bff2d = np.block([[lm_tvecs[2,:]],[-lm_tvecs[0,:]]])
-            lm_bff2d = np.mean(lm_bff2d, axis=1).reshape(-1,1)
+            lm_tvecs = tvecs[ids == idi].T
+            lm_bff2d = np.block([[lm_tvecs[2, :]], [-lm_tvecs[0, :]]])
+            lm_bff2d = np.mean(lm_bff2d, axis=1).reshape(-1, 1)
 
+            # Covariance not specified
             lm_measurement = Measurements.MarkerMeasurement(lm_bff2d, idi)
             measurements.append(lm_measurement)
-        
-        # Draw markers on image copy
-        img_marked = img.copy()
-        cv2.aruco.drawDetectedMarkers(img_marked, corners, ids)
 
-        return measurements, img_marked
+        # img_marked = img.copy()
+        # Draw markers on original
+
+        cv2.aruco.drawDetectedMarkers(img, corners, ids, PINK)
+        # Draw markers on copy
+
+        # cv2.aruco.drawDetectedMarkers(img_marked, corners, ids)
+
+        return measurements, img
