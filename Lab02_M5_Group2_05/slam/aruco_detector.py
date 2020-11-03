@@ -37,9 +37,9 @@ class aruco_detector:
 
         # CUSTOM PARAMS HERE
         # DO NOT USE CORNER_REFINE_CONTOUR
-        # self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
+        self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
         self.aruco_params.cornerRefinementWinSize = 3
-        self.aruco_params.cornerRefinementMaxIterations = 30
+        self.aruco_params.cornerRefinementMaxIterations = 40
         self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_100)
 
     def detect_marker_positions(self, img):
@@ -55,13 +55,26 @@ class aruco_detector:
         if ids is None:
             return [], img
 
-        # img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # img_gray = None
+        # # If not grayscale, convert
+        # if img.shape[2] == 1:
+        #     img_gray = img
+        # else:
+        #     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # # Loop through all corners
+        # for i in range(len(corners)):
+        #     current_marker = corners[i][0]
+        #     top_left_x
+        #     print(corner.shape)
+        # cv2.imshow("aruco regions", aruco_img)
         # corners_gray = cv2.goodFeaturesToTrack(
-        #     img_gray, maxCorners=10, qualityLevel=0.7, minDistance=10, blockSize=7
+        #     img_gray, maxCorners=10, qualityLevel=0.01, minDistance=10, blockSize=7
         # )
+
         # for i in range(len(corners_gray)):
         #     x, y = corners_gray[i].ravel()
-        #     cv2.circle(img, (x, y), 3, (255, 0, 0), -1)
+        #     cv2.circle(img, (x, y), 3, (255, 51, 255), -1)
 
         # aruco_board = cv2.aruco_Board.create(corners[0].astype(np.float32), self.aruco_dict, ids)
         # r_corners, r_ids, rejected_corners, recovered_ids = cv2.aruco.refineDetectedMarkers(
@@ -74,6 +87,7 @@ class aruco_detector:
         #     cameraMatrix=self.camera_matrix,
         #     distCoeff=self.distortion_params,
         # )
+
         # Marker length should be scaled to pixel size
         _, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
             corners, self.marker_length, self.camera_matrix, self.distortion_params
