@@ -25,7 +25,6 @@ class YOLO:
     # number of pixels
     TEXT_OFFSET = 18
 
-    # TODO: Change to absolute path
     def __init__(
         self,
         gpu: int = 0,
@@ -62,6 +61,10 @@ class YOLO:
 
         self._TIMER = CvTimer()
         self.seen_objects = dict()
+        self._object_counts = dict()
+
+        for label in self._classes:
+            self._object_counts[label] = 0
 
     def run_inference(
         self, cv2_frame: np.ndarray, external_timer: CvTimer = None
@@ -92,14 +95,24 @@ class YOLO:
         # uncomment for colors that change every iteration
         # self.COLORS = np.random.uniform(0, 255, size=(len(self._classes), 3))
 
-        FRAME_HEIGHT, FRAME_WIDTH, _ = self._img.shape
-        # FOV_HORZ = 1.0855
-        # FOV_VERT = 0.8517
-        SCALE_HEIGHT = 0
-        SCALE_WIDTH = 0
-        MAX_DISTANCE = 3
-        DUPLICATE_THRESHOLD = 1.5
-        CAPTURE_WINDOW = 50
+        FRAME_HEIGHT, FRAME_WIDTH, _ = self._img.shape  # pixels
+        FOV_HORZ = 1.0855  # radians
+        FOV_VERT = 0.8517  # radians
+        # WIDTH or HEIGHT based should NOT matter, but values vary by 1 ish
+        FOCAL_LENGTH_W = (FRAME_WIDTH / 2) / np.tan(FOV_HORZ / 2)  # pixels
+        FOCAL_LENGTH_H = (FRAME_HEIGHT / 2) / np.tan(FOV_VERT / 2)  # pixels
+        MAX_DISTANCE = 4  # metres
+        MAX_MATCH_ERROR = 0.2  # 20%
+        DUPE_THRESH = 2  # metres
+        DUPE_X_THRESH = 0.55
+        DUPE_Y_THRESH = 0.55
+        CAPTURE_WINDOW = 50  # pixels
+        # (x,y,z) in m == ("thickness", width, height) dimensions
+        # TODO: Check actual box dimensions in Gazebo
+        COKE = (0.06, 0.06, 0.14)
+        SHEEP = (0.108, 0.223, 0.204)
+        SCALE_HEIGHT = None
+        SCALE_WIDTH = None
 
         # START DRAWING BOXES
         for (class_id, confidence, box) in zip(
@@ -118,48 +131,99 @@ class YOLO:
 
             cv2.rectangle(self._img, box, color, self.FONT_THICCNESS)
             cv2.circle(self._img, (centre_x, centre_y), 1, color, 2)
-
             # -1 to draw ABOVE the box
             self.write_text(label, x, y, color, 14, position=-1)
 
-            # END OF DRAWING BOXES
-            # START PROCESS DISTANCES
-
+            annot_dist = None
+            focal_dist = None
             if label_name == "sheep":
-                # 122 = 61 height @ 2m
-                # 146.5 = 293 height @ 0.5m
-                SCALE_HEIGHT = 125.5
-                SCALE_WIDTH = 135.5
+                # bounding box dimensions @ 1m
+                SCALE_HEIGHT = 125
+                # SCALE_WIDTH = 135.5
+                # DO NOT USE WIDTH FOR SHEEP (ASYMMETRICAL!)
+
+                expected_height = SHEEP[2]
+                annot_dist = SCALE_HEIGHT / height
+                focal_dist = (expected_height * FOCAL_LENGTH_H) / height
+
             elif label_name == "coke":
-                # 92 = 92 height @ 1m
+                # bounding box dimensions @ 1m
                 SCALE_HEIGHT = 93.5
                 SCALE_WIDTH = 37.5
 
-            focal_length_w = width / SCALE_WIDTH
-            focal_length_h = height / SCALE_HEIGHT
-            distance_w = SCALE_WIDTH / width
-            distance_h = SCALE_HEIGHT / height
-            dist = (distance_w + distance_h) / 2
+                expected_width = COKE[1]
+                expected_height = COKE[2]
+                # units:(m), distance based on bounding boxes
+                distance_w = SCALE_WIDTH / width
+                distance_h = SCALE_HEIGHT / height
+                annot_dist = (distance_w + distance_h) / 2
+
+                # units:(m), distance based on focal lengths
+                f_dist_w = (expected_width * FOCAL_LENGTH_W) / width
+                f_dist_h = (expected_height * FOCAL_LENGTH_H) / height
+                focal_dist = (f_dist_w + f_dist_h) / 2
+
+            # Calculate discrepancy between 2 methods
+            match_error = abs((annot_dist - focal_dist) / annot_dist)
+
+            # Removes dependence on capturing objects in centre of frame
+            centre_offset = centre_x - FRAME_WIDTH / 2
+            focal_length = (FOCAL_LENGTH_W + FOCAL_LENGTH_H) / 2
+            angle_obj_to_robot = np.arctan2(centre_offset, focal_length)
 
             # World frame
-            obj_x = dist * np.cos(robot_pose[2]) + robot_pose[0]
-            obj_y = dist * np.sin(robot_pose[2]) + robot_pose[1]
-            save_pose = False
-            # check if box centre is within of centre of frame
-            if abs((x + width / 2) - FRAME_WIDTH / 2) < CAPTURE_WINDOW:
-                # check if within threshold
-                if dist < MAX_DISTANCE:
-                    save_pose = True
-                    if seen_objects is not None:
-                        for obj in seen_objects:
-                            obj_dist = np.sqrt(
-                                (obj[1] - obj_x) ** 2 + (obj[2] - obj_y) ** 2
-                            )
-                            # check for duplicate entries
-                            if obj_dist < DUPLICATE_THRESHOLD:
-                                save_pose = False
+            obj_x = (
+                annot_dist * np.cos(robot_pose[2] - angle_obj_to_robot) + robot_pose[0]
+            )
+            obj_y = (
+                annot_dist * np.sin(robot_pose[2] - angle_obj_to_robot) + robot_pose[1]
+            )
+            # print(f'{label_name}: {match_error:.2f}')
+
+            save_pose = True
+            # check if box centre is within capture window
+            if abs((x + width / 2) - FRAME_WIDTH / 2) > CAPTURE_WINDOW:
+                save_pose = False
+            # check if within threshold
+            if annot_dist > MAX_DISTANCE:
+                save_pose = False
+            # check error between annotation vs focal length methods
+            if match_error > MAX_MATCH_ERROR:
+                print(f"match error exceeded")
+                save_pose = False
+
+
+
+            if seen_objects is not None:
+                for obj in seen_objects:
+                    delta_obj_x = abs(obj[1] - obj_x)
+                    delta_obj_y = abs(obj[2] - obj_y)
+                    delta_obj_dist = np.sqrt(delta_obj_x ** 2 + delta_obj_y ** 2)
+                    # check for duplicate entries
+                    if delta_obj_x < DUPE_X_THRESH and delta_obj_y < DUPE_Y_THRESH:
+                        save_pose = False
+                    # check if box centre is within capture window
+            # if abs((x + width / 2) - FRAME_WIDTH / 2) < CAPTURE_WINDOW:
+            #     # check if within threshold, and annotation and focal length distance calculations within error threshold
+            #     if annot_dist < MAX_DISTANCE and match_error <= MAX_MATCH_ERROR:
+            #         save_pose = True
+            #         if seen_objects is not None:
+            #             for obj in seen_objects:
+            #                 delta_obj_x = abs(obj[1] - obj_x)
+            #                 delta_obj_y = abs(obj[2] - obj_y)
+            #                 delta_obj_dist = np.sqrt(
+            #                     delta_obj_x ** 2 + delta_obj_y ** 2
+            #                 )
+            #                 # check for duplicate entries
+            #                 if delta_obj_x < DUPE_X_THRESH and delta_obj_y < DUPE_Y_THRESH:
+            #                     save_pose = False
+            #                 # if delta_obj_dist < DUPE_THRESH:
+            #                 #     save_pose = False
 
             if save_pose:
+                self._object_counts[label_name] += 1
+                n = self._object_counts[label_name]
+                label_name = label_name + str(n)
                 seen_objects.append([label_name, obj_x[0], obj_y[0]])
                 print(f"Detected {label_name} @x:{obj_x[0]:.2f} y:{obj_y[0]:.2f}")
                 # print(seen_objects)
@@ -168,7 +232,7 @@ class YOLO:
             y_label = f"Yw: {np.around(obj_y, 2)}"
             w_label = f"W: {width}"
             h_label = f"H: {height}"
-            dist_label = f"D(m): {dist:.2f}"
+            dist_label = f"D(m): {annot_dist:.2f}"
             self.write_text(x_label, x, y + height, color, 14, position=1)
             self.write_text(y_label, x, y + height, color, 14, position=2)
             self.write_text(w_label, x, y + height + 30, color, 14, position=1)

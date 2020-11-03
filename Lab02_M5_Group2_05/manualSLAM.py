@@ -6,7 +6,7 @@ import json
 import time
 import cv2
 
-matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
 
 # Import keyboard teleoperation components
 from PenguinPiC import PenguinPi
@@ -94,8 +94,6 @@ class Operate:
             )
         self.marker_list = sorted(self.marker_list, key=lambda x: x[0])
         self.seen_objects = sorted(self.seen_objects, key=lambda x: x[0])
-        n_sheep = 0
-        n_coke = 0
         with open(map_f, "w") as f:
             f.write("object, x, y\n")
             for markers in self.marker_list:
@@ -109,16 +107,8 @@ class Operate:
                 )
                 f.write("\n")
             for markers in self.seen_objects:
-                n = 0
-                if markers[0] == "sheep":
-                    n_sheep += 1
-                    n = n_sheep
-                elif markers[0] == "coke":
-                    n_coke += 1
-                    n = n_coke
-
                 f.write(
-                    str(markers[0]) + str(n) + ", " + str(markers[1]) + ", " + str(markers[2])
+                    str(markers[0]) + ", " + str(markers[1]) + ", " + str(markers[2])
                 )
                 f.write("\n")
 
@@ -164,13 +154,11 @@ class Operate:
             self._TIMER.stop("plot")
             plot_time, plot_rate = self._TIMER.get_diagnostics("plot")
             plot_label = f"plot: {plot_time:3.2f}ms @ {plot_rate:3.2f}Hz"
+            # Not showing due to axes being cleared
             self.yolo.write_text(
                 plot_label, 0, 25, self.yolo.COLORS[0], position=4, img=self.img
             )
             # self._TIMER.print_all()
-
-    # def __del__(self):
-    # self.ppi.set_velocity(0, 0)
 
 
 if __name__ == "__main__":
