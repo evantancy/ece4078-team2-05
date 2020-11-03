@@ -6,8 +6,11 @@ from PenguinPiC import PenguinPi
 
 
 class Keyboard:
-    # TODO: Change to factor 68 / 60
-    COMPENSATION = 8
+    # Calibrated at 60 m/s
+    LINEAR_COMPENSATION = 69 / 60
+    # Taken from baseline.txt
+    BASELINE = 1.142968276500685443
+    TURN_COMPENSATION = LINEAR_COMPENSATION * BASELINE
 
     def __init__(self, ppi=None, forward_vel=60, turning_vel=28) -> None:
         # storage for key presses
@@ -95,6 +98,7 @@ class Keyboard:
         """
         self.trigger_state(key, False)
 
+    # Should be called calculate_drive_signal tbh
     def get_drive_signal(self) -> list:
         """Determine target velocities
         Returns:
@@ -104,19 +108,6 @@ class Keyboard:
 
         # Update speed - Check the current state of the robot movement so we can update the wheel velocity from the speed adjustments accordingly
         [left_target, right_target, _] = self.latest_drive_signal()
-
-        if left_target > (right_target + self.COMPENSATION * 2):
-            left_target = self.wheel_vel_turning
-            right_target = -self.wheel_vel_turning
-        elif left_target < right_target:
-            left_target = -self.wheel_vel_turning
-            right_target = self.wheel_vel_turning
-        elif left_target > 0 and right_target > 0:
-            left_target = self.wheel_vel_forward + self.COMPENSATION
-            right_target = self.wheel_vel_forward
-        elif left_target < 0 and right_target < 0:
-            left_target = -self.wheel_vel_forward
-            right_target = -self.wheel_vel_forward
 
         if self.signal_stop == True:
             left_target = 0
@@ -130,24 +121,44 @@ class Keyboard:
                 if direction == True:
                     if index == 0:
                         # Forward
-                        left_target = self.wheel_vel_forward + self.COMPENSATION
+                        left_target = self.wheel_vel_forward * self.LINEAR_COMPENSATION
                         right_target = self.wheel_vel_forward
-
                     elif index == 1:
                         # Backward
-                        left_target = -self.wheel_vel_forward
+                        left_target = -(
+                            self.wheel_vel_forward * self.LINEAR_COMPENSATION
+                        )
                         right_target = -self.wheel_vel_forward
-
                     elif index == 2:
                         # Turn Left
+                        # left_target = -(self.wheel_vel_turning + self.TURN_COMPENSATION)
                         left_target = -self.wheel_vel_turning
                         right_target = self.wheel_vel_turning
-
                     elif index == 3:
                         # Turn Right
-                        left_target = self.wheel_vel_turning
+                        # left_target = self.wheel_vel_turning + self.TURN_COMPENSATION
+                        left_target = -self.wheel_vel_turning
                         right_target = -self.wheel_vel_turning
 
+        # Latching onto states
+        if left_target > right_target * self.LINEAR_COMPENSATION:
+            # left_target = self.wheel_vel_turning + self.TURN_COMPENSATION
+            left_target = self.wheel_vel_turning
+            right_target = -self.wheel_vel_turning
+        elif left_target < right_target * self.LINEAR_COMPENSATION:
+            # left_target = -(self.wheel_vel_turning + self.TURN_COMPENSATION)
+            left_target = -self.wheel_vel_turning
+            right_target = self.wheel_vel_turning
+        elif left_target > 0 and right_target > 0:
+            left_target = self.wheel_vel_forward * self.LINEAR_COMPENSATION
+            right_target = self.wheel_vel_forward
+        elif left_target < 0 and right_target < 0:
+            left_target = -self.wheel_vel_forward * self.LINEAR_COMPENSATION
+            right_target = -self.wheel_vel_forward
+
+        # Convert to int if not request fails
+        left_target = int(round(left_target))
+        print(f"L_VEL:{left_target:4.0f} R_VEL:{right_target:3.0f}")
         return left_target, right_target
 
     def send_drive_signal(self) -> None:
@@ -164,9 +175,13 @@ class Keyboard:
         """
         l, r = self.wheel_vels
         k = self.key_pressed
-        if k == Key.up:
-            l = l - self.COMPENSATION
 
+        # Remove LINEAR_COMPENSATION before telling the our robot what the current speeds are
+        # LINEAR_COMPENSATION is meant to help robot drive straight in Gazebo!
+        if k == Key.up or k == Key.down:
+            l = l / self.LINEAR_COMPENSATION
+        # elif k == Key.left or k == Key.right:
+        #     l = l - self.TURN_COMPENSATION
         return l, r, k
 
 
