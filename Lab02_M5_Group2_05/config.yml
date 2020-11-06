@@ -1,0 +1,74 @@
+SLAM:
+ARUCO:
+  max_tvecs_norm: 15
+  marker_length: 0.1
+YOLO:
+  FOV:
+    # in radians, taken from PenguinPi.sdf
+    horizontal: 1.0855
+    vertical: 0.8517
+
+  THRESHOLD:
+    confidence: 0.35
+    NMS: 0.2
+    max_detect_distance: 4
+    max_match_error: 0.2
+    dupe_abs_dist: 2
+    dupe_x: 1.25
+    dupe_y: 1.25
+    capture_window: 600
+
+  PATH:
+    weights: "yolo_cfg/custom-yolov4-tiny-detector_best.weights"
+    cfg: "yolo_cfg/custom-yolov4-tiny-detector.cfg"
+    classes: "yolo_cfg/obj.names"
+
+  NETWORK_SIZE:
+    small: !!python/tuple [320, 320]
+    medium: !!python/tuple [416, 416]
+    large: !!python/tuple [608, 608]
+    custom_1: !!python/tuple [512, 512]
+
+  DRAWING:
+    colors:
+      - !!python/tuple [255,51,255]
+      - !!python/tuple [255, 255, 255]
+      - !!python/tuple [0, 255, 0]
+    font_size: 0.5
+    font_thiccness: 2
+    text_offset: 18
+
+
+collection:
+  label_select: 0
+  labels: ["sheep", "coke", "neither"]
+  ppi_csv: "ppi_coordinates.csv"
+  ppi:
+    n_positions: 10
+    n_rotations: 6
+  object:
+    n_rotations: 30
+  x_min: -2
+  x_max: 3
+  y_min: -0.25
+  y_max: 4
+  n_steps: 15
+  max_images:
+  taking_images: True
+
+# These parameters are used when not passing a custom parameter dictionary in automated_testin.py
+training:
+  exp_name: 'trained_1'
+  init_lr: 5.0e-3
+  batch_size: 128
+  n_epochs: 15
+  weight_decay: 1.0e-5
+  num_classes: 3
+  load_best: 1
+  gpu_ids: '0'
+  lr_scheduler:
+      step_size: 1
+      gamma: 0.9
+
+# Testing, training
+mode: "testing"

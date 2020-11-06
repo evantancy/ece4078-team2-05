@@ -61,7 +61,9 @@ class Slam:
         idx_list = [self.taglist.index(tag) for tag in tags]
 
         # Stack measurements and set covariance
-        z = np.concatenate([lm.position.reshape(-1, 1) for lm in measurements], axis=0)
+        z = np.concatenate(
+            [np.asarray(lm.position).reshape(-1, 1) for lm in measurements], axis=0
+        )
         R = np.zeros((2 * len(measurements), 2 * len(measurements)))
         for i in range(len(measurements)):
             R[2 * i : 2 * i + 2, 2 * i : 2 * i + 2] = measurements[i].covariance
@@ -113,7 +115,8 @@ class Slam:
             lm_bff = lm.position
             lm_inertial = robot_xy + R_theta @ lm_bff
 
-            self.taglist.append(int(lm.tag))
+            # self.taglist.append(int(lm.tag))
+            self.taglist.append(lm.tag)
             self.markers = np.concatenate((self.markers, lm_inertial), axis=1)
 
             # Create a simple, large covariance to be fixed by the update step
@@ -148,7 +151,15 @@ class Slam:
         # Draw landmarks
         if self.number_landmarks() > 0:
             # (x,y) coordinates
-            ax.plot(self.markers[0, :], self.markers[1, :], "ko")
+            for i in range(self.markers.shape[1]):
+                if type(self.taglist[i]) == str:
+                    if "coke" in self.taglist[i]:
+                        ax.plot(self.markers[0, i], self.markers[1, i], "ro")
+                    elif "sheep" in self.taglist[i]:
+                        ax.plot(self.markers[0, i], self.markers[1, i], "go")
+                else:
+                    ax.plot(self.markers[0, i], self.markers[1, i], "ko")
+
         # print(self.markers)
         # Draw robot
         ARROW_SCALE = 0.8

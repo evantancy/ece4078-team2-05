@@ -1,4 +1,5 @@
 import numpy as np
+from Measurements import DriveMeasurement
 
 
 class Robot:
@@ -24,7 +25,7 @@ class Robot:
         )
         self.camera_dist = camera_dist  # Distortion coefficients
 
-    def drive(self, drive_meas):
+    def drive(self, drive_meas: DriveMeasurement):
         # left_speed and right_speed are the speeds in ticks/s of the left and right wheels.
         # dt is the length of time to drive for
 
@@ -35,9 +36,7 @@ class Robot:
 
         # Apply the velocities
         dt = drive_meas.dt
-        # TODO: compute state (x,y,theta) from linear and angular velocity
         current_theta = self.state[2]
-
         if angular_velocity != 0:
             # Radius of curvature
             R = linear_velocity / angular_velocity
@@ -83,9 +82,6 @@ class Robot:
         angular_velocity = (right_speed_m - left_speed_m) / self.wheels_width
 
         return linear_velocity, angular_velocity
-
-    # Derivatives and Covariance
-    # --------------------------
 
     def derivative_drive(self, drive_meas):
         # Compute the differential of drive w.r.t. the robot state
