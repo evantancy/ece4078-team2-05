@@ -11,9 +11,9 @@ PINK = params["YOLO"]["DRAWING"]["colors"][0]
 
 
 class aruco_detector:
-    def __init__(self, robot, marker_length=0.1):
-        self.camera_matrix = robot.camera_matrix
-        self.distortion_params = robot.camera_dist
+    def __init__(self, camera_matrix, camera_dist, marker_length=0.1):
+        self.camera_matrix = camera_matrix
+        self.distortion_params = camera_dist
 
         self.marker_length = marker_length
         self.aruco_params = cv2.aruco.DetectorParameters_create()
@@ -42,9 +42,11 @@ class aruco_detector:
 
         # CUSTOM PARAMS HERE
         # DO NOT USE CORNER_REFINE_CONTOUR
+        self.aruco_params.minMarkerDistanceRate = 0.05 * 2
+        self.aruco_params.minDistanceToBorder = 0
+        self.aruco_params.adaptiveThreshWinSizeMax = 1000
         self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
-        self.aruco_params.cornerRefinementWinSize = 3
-        self.aruco_params.cornerRefinementMaxIterations = 40
+        self.aruco_params.cornerRefinementMaxIterations = 100
         self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_100)
 
     def detect_marker_positions(self, img):
