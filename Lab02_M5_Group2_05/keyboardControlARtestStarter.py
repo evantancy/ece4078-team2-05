@@ -9,8 +9,8 @@ class Keyboard:
     # Calibrated at 60 m/s
     LINEAR_COMPENSATION = 69 / 60
     # Taken from baseline.txt
-    BASELINE = 1.142968276500685443
-    TURN_COMPENSATION = LINEAR_COMPENSATION * BASELINE
+    # BASELINE = 1.142968276500685443
+    # TURN_COMPENSATION = LINEAR_COMPENSATION * BASELINE
 
     def __init__(self, ppi=None, forward_vel=60, turning_vel=28) -> None:
         # storage for key presses
@@ -24,7 +24,7 @@ class Keyboard:
         self.wheel_vels = [0, 0]
         self.wheel_vel_forward = forward_vel
         self.wheel_vel_turning = turning_vel
-        self.key_pressed = "NONE"
+        self.key_pressed = None
 
         self.listener = Listener(
             on_press=self.on_press, on_release=self.on_release
@@ -97,6 +97,7 @@ class Keyboard:
             key (Key): keyboard input
         """
         self.trigger_state(key, False)
+        self.key_pressed = None
 
     # Should be called calculate_drive_signal tbh
     def get_drive_signal(self) -> list:
@@ -158,7 +159,7 @@ class Keyboard:
 
         # Convert to int if not request fails
         left_target = int(round(left_target))
-        print(f"L_VEL:{left_target:4.0f} R_VEL:{right_target:3.0f}")
+        # print(f"L_VEL:{left_target:4.0f} R_VEL:{right_target:3.0f}")
         return left_target, right_target
 
     def send_drive_signal(self) -> None:
