@@ -1,7 +1,9 @@
 SLAM:
+
 ARUCO:
   max_tvecs_norm: 15
   marker_length: 0.1
+
 YOLO:
   FOV:
     # in radians, taken from PenguinPi.sdf
@@ -11,12 +13,14 @@ YOLO:
   THRESHOLD:
     confidence: 0.35
     NMS: 0.2
-    max_detect_distance: 4
+    # Different distance thresholds
+    max_distance_coke: 3
+    max_distance_sheep: 3
     max_match_error: 0.2
     dupe_abs_dist: 2
-    dupe_x: 1.25
-    dupe_y: 1.25
-    capture_window: 600
+    dupe_x: 0.6
+    dupe_y: 0.6
+    capture_window: 50
 
   PATH:
     weights: "yolo_cfg/custom-yolov4-tiny-detector_best.weights"
