@@ -62,6 +62,6 @@ class PenguinPi:
                 requests.exceptions.ConnectionError,
                 requests.exceptions.ReadTimeout,
             ):
-                print("Image retrieval timed out.")
+                print("PenguinPiC: Image retrieval timed out.")
                 img = np.zeros((240, 320, 3), dtype=np.uint8)
         return img

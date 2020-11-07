@@ -25,6 +25,8 @@ class Keyboard:
         self.wheel_vel_forward = forward_vel
         self.wheel_vel_turning = turning_vel
         self.key_pressed = None
+        self.run_yolo = False
+        print("Keyboard: YOLO is off! Turn on using 'y'")
 
         self.listener = Listener(
             on_press=self.on_press, on_release=self.on_release
@@ -52,6 +54,13 @@ class Keyboard:
 
             elif key == Key.right:
                 self.directions[3] = activate
+
+            elif str(key.char).lower() == "y" and activate:
+                self.run_yolo = not self.run_yolo
+                if self.run_yolo:
+                    print("Keyboard: YOLO On")
+                else:
+                    print("Keyboard: YOLO Off")
 
         except AttributeError:
             pass
@@ -97,7 +106,6 @@ class Keyboard:
             key (Key): keyboard input
         """
         self.trigger_state(key, False)
-        self.key_pressed = None
 
     # Should be called calculate_drive_signal tbh
     def get_drive_signal(self) -> list:
@@ -184,85 +192,3 @@ class Keyboard:
         # elif k == Key.left or k == Key.right:
         #     l = l - self.TURN_COMPENSATION
         return l, r, k
-
-
-if __name__ == "__main__":
-    ppi = PenguinPi()
-
-    keyboard_control = Keyboard(ppi)
-
-    cv2.namedWindow("video", cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty("video", cv2.WND_PROP_AUTOSIZE, cv2.WINDOW_AUTOSIZE)
-
-    while True:
-        # font display options
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        location = (0, 0)
-        font_scale = 1
-        font_col = (255, 255, 255)
-        line_type = 2
-
-        # Get velocity of each wheel
-        (
-            left_wheel_vel,
-            right_wheel_vel,
-            key_pressed,
-        ) = keyboard_control.latest_drive_signal()
-
-        # Get current frame
-        curr = ppi.get_image()
-
-        # uncomment to see how noises influence the accuracy of ARUCO marker detection
-        # im = np.zeros(np.shape(curr), np.uint8)
-        # cv2.randn(im,(0),(99))
-        # curr = curr + im
-
-        # show ARUCO marker detection annotations
-        aruco_params = aruco.DetectorParameters_create()
-        aruco_params.minDistanceToBorder = 0
-        aruco_params.adaptiveThreshWinSizeMax = 1000
-        aruco_dict = aruco.Dictionary_get(cv2.aruco.DICT_4X4_100)
-
-        corners, ids, rejected = aruco.detectMarkers(
-            curr, aruco_dict, parameters=aruco_params
-        )
-
-        aruco.drawDetectedMarkers(
-            curr, corners, ids
-        )  # for detected markers show their ids
-        aruco.drawDetectedMarkers(
-            curr, rejected, borderColor=(100, 0, 240)
-        )  # unknown squares
-
-        # Scale to 144p
-        resized = cv2.resize(curr, (960, 720), interpolation=cv2.INTER_AREA)
-        x = 15
-        y = 30
-        # Replace with your own GUI
-        cv2.putText(resized, "PenguinPi", (x, y), font, font_scale, font_col, line_type)
-        cv2.putText(
-            resized,
-            "L VEL = " + str(left_wheel_vel) + ", R VEL = " + str(right_wheel_vel),
-            (15, 2 * y),
-            font,
-            font_scale,
-            (0, 0, 0),
-            2,
-        )
-        cv2.putText(
-            resized,
-            "KEY PRESSED: " + str(key_pressed),
-            (15, 3 * y),
-            font,
-            font_scale,
-            (255, 0, 0),
-            3,
-        )
-
-        cv2.imshow("video", resized)
-
-        cv2.waitKey(1)
-        # if keyboard_control.isded:
-        #    break
-
-        continue
