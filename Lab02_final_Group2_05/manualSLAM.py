@@ -77,11 +77,8 @@ class Operate:
         with open(map_f, "w") as f:
             f.write("object, x, y\n")
             for markers in self.marker_list:
-                if type(markers[0]) == int:
-                    markers[0] = "Marker" + str(markers[0])
-
                 f.write(
-                    str(markers[0]) + ", " + str(markers[1]) + ", " + str(markers[2])
+                    "Marker" + str(markers[0]) + ", " + str(markers[1]) + ", " + str(markers[2])
                 )
                 f.write("\n")
             for i in range(len(self.seen_objects)):
@@ -90,16 +87,6 @@ class Operate:
                     str(markers[0]) + ", " + str(markers[1]) + ", " + str(markers[2])
                 )
                 f.write("\n")
-                # markers = self.scale_objects[2 * i]
-                # f.write(
-                #     str(markers[0]) + ", " + str(markers[1]) + ", " + str(markers[2])
-                # )
-                # f.write("\n")
-                # markers = self.scale_objects[2 * i + 1]
-                # f.write(
-                #     str(markers[0]) + ", " + str(markers[1]) + ", " + str(markers[2])
-                # )
-                # f.write("\n")
 
     def process(self):
         # Show SLAM and camera feed side by side

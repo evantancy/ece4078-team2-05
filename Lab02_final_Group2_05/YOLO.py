@@ -191,7 +191,7 @@ class YOLO:
 
             # Calculate discrepancy between 2 methods
             # match_error = abs((annot_dist - focal_dist) / annot_dist)
-            
+
             save_pose = False
             # check if box centre is within capture window
             if abs((x + width / 2) - FRAME_WIDTH / 2) < self.CAPTURE_WINDOW:
@@ -216,7 +216,7 @@ class YOLO:
 
             if save_pose:
                 n = None
-                if self._object_counts[label_name] < 5:
+                if self._object_counts[label_name] < 10:
                     self._object_counts[label_name] += 1
                     n = self._object_counts[label_name]
                 else:

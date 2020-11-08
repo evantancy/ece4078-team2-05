@@ -17,7 +17,7 @@
           <izz>01.2</izz>
         </inertia>
       </inertial>
-    
+
           <collision name='collision'>
             <geometry>
               <box>
@@ -115,7 +115,7 @@
             <emmisive>1 1 1</emmisive>
           </material>
           <geometry>
-            <mesh>              
+            <mesh>
               <uri>model://penguinpi_description/meshes/Chassiss.stl</uri>
             </mesh>
           </geometry>
@@ -214,9 +214,9 @@
             <uri>model://penguinpi_description/meshes/Rim_s.stl</uri>
           </mesh>
         </geometry>
-      </visual> 
+      </visual>
     </link>
-    
+
 
 
     <link name="left_wheel">
@@ -233,7 +233,7 @@
           <izz>0.0023528</izz>
         </inertia>
       </inertial>
-      
+
       <collision name="collision">
         <geometry>
           <cylinder>
@@ -376,7 +376,7 @@
         </geometry>
         <transparency>0.9</transparency>
       </visual>
-    </link> 
+    </link>
 
   <link name='cam_link'>
     <pose>0.08 0.0 0.015 0 0 0</pose>
@@ -443,7 +443,7 @@
       <parent>base_link</parent>
       <axis>
         <xyz>0 1 0</xyz>
-     
+
         <limit>
           <lower>-1e+16</lower>
           <upper>1e+16</upper>
@@ -477,7 +477,7 @@
       <parent>base_link</parent>
       <axis>
         <xyz>0 1 0</xyz>
-      
+
         <limit>
           <lower>-1e+16</lower>
           <upper>1e+16</upper>
@@ -510,7 +510,7 @@
   <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
 
     <!-- Plugin update rate in Hz -->
-    <updateRate>20</updateRate>
+    <updateRate>60</updateRate>
 
     <!-- Name of left joint, defaults to `left_joint` -->
     <leftJoint>left_wheel_hinge</leftJoint>
