@@ -1,5 +1,3 @@
-SLAM:
-
 ARUCO:
   max_tvecs_norm: 15
   marker_length: 0.1
@@ -41,38 +39,3 @@ YOLO:
     font_size: 0.5
     font_thiccness: 2
     text_offset: 18
-
-
-collection:
-  label_select: 0
-  labels: ["sheep", "coke", "neither"]
-  ppi_csv: "ppi_coordinates.csv"
-  ppi:
-    n_positions: 10
-    n_rotations: 6
-  object:
-    n_rotations: 30
-  x_min: -2
-  x_max: 3
-  y_min: -0.25
-  y_max: 4
-  n_steps: 15
-  max_images:
-  taking_images: True
-
-# These parameters are used when not passing a custom parameter dictionary in automated_testin.py
-training:
-  exp_name: 'trained_1'
-  init_lr: 5.0e-3
-  batch_size: 128
-  n_epochs: 15
-  weight_decay: 1.0e-5
-  num_classes: 3
-  load_best: 1
-  gpu_ids: '0'
-  lr_scheduler:
-      step_size: 1
-      gamma: 0.9
-
-# Testing, training
-mode: "testing"

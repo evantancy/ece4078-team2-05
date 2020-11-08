@@ -127,7 +127,6 @@ class Slam:
 
     # Plotting functions
     # ------------------
-    # TODO: blit
     # https://matplotlib.org/3.3.0/tutorials/advanced/blitting.html
     def draw_slam_state(self, ax) -> None:
         # ax.grid(True)

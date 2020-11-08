@@ -11,7 +11,6 @@ from utils import load_calib_params, load_yaml
 import cv2
 
 sys.path.insert(0, "{}/slam".format(os.getcwd()))
-from SLAMv2 import Extractor
 from slam.Slam import Slam
 from slam.Robot import Robot
 from slam.aruco_detector import aruco_detector
@@ -19,8 +18,7 @@ import slam.Measurements as Measurements
 
 # import matplotlib
 # matplotlib.use("TkAgg")
-
-map_f = "Lab02_M5_Map_Group2_05.csv"
+map_f = "Lab02_final_Map_Group2_05.csv"
 calib_folder = os.getcwd() + "/calibration/"
 params = load_yaml("config.yml")
 
@@ -54,7 +52,6 @@ class Operate:
         )
 
         self.slam = Slam(self.pibot)
-        self.orb_slam = Extractor()
         self._TIMER = CvTimer()
         self.seen_objects = []
         self.scale_objects = []
@@ -121,7 +118,6 @@ class Operate:
 
             self._TIMER.start("vision")
             self.img = self.ppi.get_image()
-            # img_copy = self.img.copy()
 
             if self.keyboard.run_yolo:
                 self.yolo.run_inference(self.img)
@@ -136,10 +132,6 @@ class Operate:
 
             # Save SLAM map
             self.write_map(self.slam)
-
-            # orb_slam
-            # self.orb_slam.process_frame(img_copy)
-            # cv2.imshow("copy", img_copy)
 
             control_time, control_rate = self._TIMER.get_diagnostics("control")
             control_label = f"control: {control_time:3.2f}ms @ {control_rate:3.2f}Hz"

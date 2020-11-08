@@ -42,11 +42,9 @@ class aruco_detector:
 
         # CUSTOM PARAMS HERE
         # DO NOT USE CORNER_REFINE_CONTOUR
-        self.aruco_params.minMarkerDistanceRate = 0.05 * 2
-        self.aruco_params.minDistanceToBorder = 0
-        self.aruco_params.adaptiveThreshWinSizeMax = 1000
+        self.aruco_params.adaptiveThreshWinSizeMin = 3
         self.aruco_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
-        self.aruco_params.cornerRefinementMaxIterations = 100
+        self.aruco_params.cornerRefinementMaxIterations = 30
         self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_100)
 
     def detect_marker_positions(self, img):
