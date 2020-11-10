@@ -1,4 +1,6 @@
 *.pyc
 *.pyo
 *.tar
+*.DS_Store
 Lab02_M5_Group2_05/Lab02_M5_Map_Group2_05.csv
+Lab02_final_Group2_05/Lab02_final_Map_Group2_05.csv
