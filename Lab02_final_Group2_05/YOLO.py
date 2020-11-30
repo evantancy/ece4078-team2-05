@@ -1,11 +1,9 @@
 import cv2
 import numpy as np
-import time
-import sys
-from typing import List
 from CvTimer import CvTimer
 from utils import load_yaml
 
+# TODO: make sure this works with absolute and relative paths
 params = load_yaml("config.yml")["YOLO"]
 
 
@@ -18,8 +16,11 @@ class YOLO:
     FONT_SIZE = params["DRAWING"]["font_size"]
     FONT_THICCNESS = params["DRAWING"]["font_thiccness"]
     TEXT_OFFSET = params["DRAWING"]["text_offset"]
-    FOV_HORZ = params["FOV"]["horizontal"]
-    FOV_VERT = params["FOV"]["vertical"]
+    FOV = {
+        "vertical": params["FOV"]["vertical"],
+        "horizontal": params["FOV"]["horizontal"],
+    }
+
     MAX_MATCH_ERROR = 0.2
     DUPE_THRESH = params["THRESHOLD"]["dupe_abs_dist"]
     DUPE_X_THRESH = params["THRESHOLD"]["dupe_x"]
@@ -99,8 +100,10 @@ class YOLO:
 
         FRAME_HEIGHT, FRAME_WIDTH, _ = self._img.shape  # pixels
         # WIDTH or HEIGHT based should NOT matter, but values vary by 1 ish
-        FOCAL_LENGTH_W = (FRAME_WIDTH / 2) / np.tan(self.FOV_HORZ / 2)  # pixels
-        FOCAL_LENGTH_H = (FRAME_HEIGHT / 2) / np.tan(self.FOV_VERT / 2)  # pixels
+        FOCAL_LENGTH_W = (FRAME_WIDTH / 2) / np.tan(
+            self.FOV["horizontal"] / 2
+        )  # pixels
+        FOCAL_LENGTH_H = (FRAME_HEIGHT / 2) / np.tan(self.FOV["vertical"] / 2)  # pixels
         COKE = {"x": 0.06, "y": 0.06, "z": 0.14}
         SHEEP = {"x": 0.108, "y": 0.223, "z": 0.204}
         SCALE_HEIGHT = None
@@ -166,9 +169,9 @@ class YOLO:
                 expected_height = COKE["z"]
                 expected_width = COKE["x"]
                 # units:(m), distance based on focal lengths
-                f_dist_w = (expected_width * FOCAL_LENGTH_W) / width
+                # f_dist_w = (expected_width * FOCAL_LENGTH_W) / width
                 f_dist_h = (expected_height * FOCAL_LENGTH_H) / height
-                focal_dist = (f_dist_w + f_dist_h) / 2
+                focal_dist = f_dist_h
 
                 # units:(m), distance based on bounding boxes
                 distance_w = SCALE_WIDTH / width

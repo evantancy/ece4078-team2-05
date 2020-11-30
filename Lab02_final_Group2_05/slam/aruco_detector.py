@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import slam.Measurements as Measurements
 import sys
+from cv2.dnn_superres import dnn_superres
 
 sys.path.append("..")
 from utils import load_yaml

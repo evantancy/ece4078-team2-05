@@ -21,6 +21,7 @@ YOLO:
     capture_window: 50
 
   PATH:
+    # these are all relative to the YOLO.py file
     weights: "yolo_cfg/custom-yolov4-tiny-detector_best.weights"
     cfg: "yolo_cfg/custom-yolov4-tiny-detector.cfg"
     classes: "yolo_cfg/obj.names"
