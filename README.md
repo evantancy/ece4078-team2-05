@@ -4,13 +4,20 @@ Team 2_05
 
 This repository contains all code for running a robot in Gazebo simulator using a Ubuntu 18.04 environment.
 
+# Docker
+First build the image by running:
+```bash
+docker build docker/ --tag ece4078
+```
+Then create a container from the docker image by running the shell script **run.sh**
+
 # Dependencies
 - Python 3
 - [OpenCV](https://github.com/opencv/opencv)
   - DNN module
 - [OpenCV_Contrib](https://github.com/opencv/opencv_contrib)
 - [ROS Melodic](https://wiki.ros.org/melodic)
-  - Gazebo 
+  - Gazebo
 
 # Milestones
 - [x] M1: Teleoperating the robot

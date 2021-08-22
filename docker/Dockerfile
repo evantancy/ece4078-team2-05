@@ -12,7 +12,7 @@ RUN mkdir -p "${HOME}"
 WORKDIR ${HOME}
 
 RUN apt-get update && \
-    apt-get upgrade -y && \
+    apt-get upgrade -y -qq && \
     apt-get autoremove && \
     apt-get clean
 
@@ -20,33 +20,30 @@ RUN apt-get update && apt-get install -y -qq wget \
     unzip \
     curl \
     python3 \
-    python3-pip
-
-RUN echo "alias pip3='python3 -m pip'" >> ~/.bash_aliases
-
-# Set pip default to pip3
-RUN pip3 install --upgrade --force pip
-RUN pip3 install numpy>=1.19.5
-
-RUN apt-get install apt-get update && apt-get install -y -qq python3-tk
-
-# gcc 10
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test && \
-    apt update && \
-    apt install gcc-10
-
-# CMake
-WORKDIR ${HOME}
-RUN apt-get update && apt-get install -y -qq git \
-    g++ \
+    python3-pip \
+    python3-tk \
+    git \
     apt-transport-https \
     ca-certificates \
     gnupg \
     software-properties-common
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-RUN apt-add-repository 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main'
-RUN apt-get update && apt-get install kitware-archive-keyring && \
-    rm /etc/apt/trusted.gpg.d/kitware.gpg
+
+RUN echo "alias pip3='python3 -m pip'" >> ~/.bash_aliases
+# Set pip default to pip3
+RUN pip3 install --upgrade --force pip
+RUN pip3 install numpy
+
+# gcc 10
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y -qq gcc-10
+
+# CMake
+WORKDIR ${HOME}
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+RUN echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main' |  tee /etc/apt/sources.list.d/kitware.list >/dev/null
+RUN apt-get update && rm /usr/share/keyrings/kitware-archive-keyring.gpg && \
+    apt-get install kitware-archive-keyring
 RUN apt-get update && apt-get install -y -qq cmake
 
 # OpenCV
@@ -96,10 +93,10 @@ RUN make --jobs=$(nproc) && \
 
 # ROS
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add - && sudo apt update
-RUN apt-get install ros-melodic-desktop-full
+RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc |  apt-key add - &&  apt-get update
+RUN apt-get install -y -qq ros-melodic-desktop-full
 RUN echo "source /opt/ros/melodic/setup.bash" >> ${HOME}/.bashrc
-RUN apt-get install python-rosdep \
+RUN apt-get install -y -qq python-rosdep \
     python-rosinstall \
     python-rosinstall-generator \
     python-wstool \
